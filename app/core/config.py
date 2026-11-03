@@ -21,6 +21,12 @@ class Settings(BaseSettings):
     # Comma-separated list of allowed browser origins.
     cors_origins: str = "http://localhost:5173"
     health_db_timeout_s: float = Field(default=2.0, gt=0)
+    # Background workers that drain the ingest queue (0 = none, used by queue-only tests).
+    worker_count: int = Field(default=4, ge=0)
+    # How often to look for streams whose pending record should be flushed.
+    worker_flush_interval_s: float = Field(default=5.0, gt=0)
+    # A stream with no new batch for this long has its pending record flushed.
+    stream_idle_s: float = Field(default=10.0, ge=0)
 
     @field_validator("log_level", mode="before")
     @classmethod

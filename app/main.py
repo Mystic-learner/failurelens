@@ -13,6 +13,7 @@ from app.core.logging import configure_logging
 from app.core.middleware import BodyLimitMiddleware
 from app.core.request_id import RequestIdMiddleware
 from app.services.ingest_queue import IngestQueue
+from app.services.worker_pool import WorkerPool
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +28,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         max_bytes=settings.queue_max_bytes,
         retry_after_s=settings.queue_retry_after_s,
     )
+    app.state.pool = WorkerPool(
+        app.state.engine,
+        app.state.queue,
+        workers=settings.worker_count,
+        flush_interval_s=settings.worker_flush_interval_s,
+        idle_s=settings.stream_idle_s,
+    )
+    app.state.pool.start()
     logger.info("startup complete")
     try:
         yield
     finally:
-        # Stop accepting new batches. Draining the queue needs the workers (Phase 3.3).
-        app.state.queue.close()
+        # Close the queue, drain every accepted batch, flush pending records, then disconnect.
+        await app.state.pool.stop()
         await app.state.engine.dispose()
         logger.info("shutdown complete")
 

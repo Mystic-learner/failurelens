@@ -9,7 +9,7 @@ from app.main import create_app
 
 def make_settings(**overrides: object) -> Settings:
     """Settings that ignore any local .env file, so tests behave the same everywhere."""
-    values: dict[str, object] = {"embedding_provider": "fake"}
+    values: dict[str, object] = {"embedding_provider": "fake", "worker_count": 0}
     values.update(overrides)
     return Settings(_env_file=None, **values)  # type: ignore[arg-type]
 
