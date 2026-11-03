@@ -136,3 +136,15 @@ class Spool:
             path.unlink(missing_ok=True)
         self.corrupt.append(path.name)
         logger.warning("spool file %s is unreadable and was quarantined", path.name)
+
+    def get(self, seq: int) -> Batch | None:
+        """The batch with this sequence number, or None. Unreadable files are quarantined."""
+        if seq not in self._sizes:
+            return None
+        path = self._dir / _name(seq)
+        try:
+            return _read(path)
+        except (OSError, ValueError, KeyError, TypeError):
+            self._sizes.pop(seq, None)
+            self._quarantine(path)
+            return None
