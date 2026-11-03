@@ -12,6 +12,7 @@ from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta, timezone, tzinfo
+from typing import Any
 
 MAX_LINE_CHARS = 4096
 HEAD_LINES = 60  # first lines of a record that are always kept
@@ -316,6 +317,41 @@ class StreamParser:
         self._clock: Callable[[], datetime] = clock or (lambda: datetime.now(UTC))
         self._max_ts: datetime | None = None
         self._pending: _Pending | None = None
+
+    def export_state(self) -> dict[str, Any]:
+        """JSON-safe snapshot: the unfinished record and the newest timestamp seen."""
+        p = self._pending
+        pending: dict[str, Any] | None = None
+        if p is not None:
+            pending = {
+                "head": list(p.head),
+                "tail": list(p.tail),
+                "omitted": p.omitted,
+                "count": p.count,
+                "ts": p.ts.isoformat() if p.ts is not None else None,
+                "level": p.level,
+                "has_trace": p.has_trace,
+            }
+        return {
+            "max_ts": self._max_ts.isoformat() if self._max_ts is not None else None,
+            "pending": pending,
+        }
+
+    def import_state(self, state: dict[str, Any]) -> None:
+        raw_max = state.get("max_ts")
+        self._max_ts = datetime.fromisoformat(raw_max) if raw_max else None
+        raw = state.get("pending")
+        if not raw:
+            self._pending = None
+            return
+        ts = datetime.fromisoformat(raw["ts"]) if raw["ts"] else None
+        pending = _Pending(str(raw["head"][0]), ts, str(raw["level"]))
+        pending.head = [str(x) for x in raw["head"]]
+        pending.tail = deque((str(x) for x in raw["tail"]), maxlen=TAIL_LINES)
+        pending.omitted = int(raw["omitted"])
+        pending.count = int(raw["count"])
+        pending.has_trace = bool(raw["has_trace"])
+        self._pending = pending
 
     def feed(self, lines: list[str]) -> list[LogRecord]:
         now = self._clock()

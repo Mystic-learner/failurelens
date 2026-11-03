@@ -27,6 +27,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, tzinfo
+from typing import Any
 
 from app.services.chunking import MAX_CHUNK_CHARS, SEVERITY, Chunk, build_chunks
 from app.services.fingerprint import extract_error_codes, make_fingerprint
@@ -67,6 +68,23 @@ class StreamProcessor:
         self._parser = StreamParser(default_tz=default_tz, clock=clock)
         self._redactor = Redactor()
         self.stats = StreamStats()
+
+    def export_state(self) -> dict[str, Any]:
+        """JSON-safe state to carry to the next batch, possibly in another process."""
+        return {
+            "v": 1,
+            "parser": self._parser.export_state(),
+            "ips": self._redactor.export_state(),
+        }
+
+    def import_state(self, state: dict[str, Any]) -> None:
+        """Restore exported state. {} (a brand-new stream) leaves a fresh processor."""
+        if not state:
+            return
+        if state.get("v") != 1:
+            raise ValueError("unknown stream state version")
+        self._parser.import_state(state["parser"])
+        self._redactor.import_state(state["ips"])
 
     def feed_bytes(self, data: bytes) -> list[ProcessedChunk]:
         """Raises BinaryInputError for binary-looking input; the caller decides what to do."""

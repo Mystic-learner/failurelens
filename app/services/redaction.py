@@ -171,6 +171,12 @@ class Redactor:
     def __init__(self) -> None:
         self._ips: dict[str, int] = {}
 
+    def export_state(self) -> dict[str, int]:
+        return dict(self._ips)
+
+    def import_state(self, ips: dict[str, int]) -> None:
+        self._ips = {str(addr): int(n) for addr, n in ips.items()}
+
     def _ip_placeholder(self, addr: str) -> str:
         n = self._ips.get(addr)
         if n is None:
