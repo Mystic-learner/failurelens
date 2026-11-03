@@ -12,8 +12,10 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     # Largest accepted request body. A single 1 MB log line must fit, so the default is 10 MB.
     max_body_bytes: int = Field(default=10 * 1024 * 1024, gt=0)
-    # Bounded ingest queue: when full, ingest answers 429 instead of growing memory.
+    # Bounded ingest queue: when full (by items OR by bytes), ingest answers 429.
     queue_max_size: int = Field(default=1000, gt=0)
+    queue_max_bytes: int = Field(default=64 * 1024 * 1024, gt=0)
+    queue_retry_after_s: int = Field(default=1, ge=1)
     embedding_provider: Literal["openai", "local", "fake"] = "openai"
     openai_api_key: str | None = None
     # Comma-separated list of allowed browser origins.

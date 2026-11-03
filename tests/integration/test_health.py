@@ -3,6 +3,7 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from app.services.ingest_queue import IngestItem
 from tests.appclient import make_settings, running_client
 
 pytestmark = pytest.mark.integration
@@ -22,8 +23,8 @@ async def test_health_ok_with_real_database(client: httpx.AsyncClient) -> None:
 
 async def test_health_reports_queue_depth(client: httpx.AsyncClient) -> None:
     queue = client.app.state.queue  # type: ignore[attr-defined]
-    for item in range(3):
-        queue.put_nowait(item)
+    for i in range(3):
+        queue.put(IngestItem("svc", "src", f"k{i}", i, b"x"))
     body = (await client.get("/health")).json()
     assert body["queue"] == {"depth": 3, "max_size": 5}
 

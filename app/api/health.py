@@ -1,4 +1,3 @@
-import asyncio
 from typing import Literal
 
 from fastapi import APIRouter, Request
@@ -13,6 +12,7 @@ from app.models.schemas import (
     HealthResponse,
     QueueHealth,
 )
+from app.services.ingest_queue import IngestQueue
 
 router = APIRouter()
 
@@ -30,7 +30,7 @@ def embedding_configured(settings: Settings) -> bool:
 async def health(request: Request) -> JSONResponse:
     settings: Settings = request.app.state.settings
     engine: AsyncEngine = request.app.state.engine
-    queue: asyncio.Queue[object] = request.app.state.queue
+    queue: IngestQueue = request.app.state.queue
 
     db_ok, latency_ms = await check_db(engine, settings.health_db_timeout_s)
     configured = embedding_configured(settings)
@@ -46,7 +46,7 @@ async def health(request: Request) -> JSONResponse:
     body = HealthResponse(
         status=status,
         database=DatabaseHealth(ok=db_ok, latency_ms=latency_ms),
-        queue=QueueHealth(depth=queue.qsize(), max_size=settings.queue_max_size),
+        queue=QueueHealth(depth=queue.depth, max_size=queue.max_items),
         embedding=EmbeddingHealth(provider=settings.embedding_provider, configured=configured),
     )
     return JSONResponse(body.model_dump(), status_code=200 if db_ok else 503)

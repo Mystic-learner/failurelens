@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -6,13 +5,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health
+from app.api import health, ingest
 from app.core.config import Settings, get_settings
 from app.core.db import create_engine
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
 from app.core.middleware import BodyLimitMiddleware
 from app.core.request_id import RequestIdMiddleware
+from app.services.ingest_queue import IngestQueue
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +22,17 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings: Settings = app.state.settings
     configure_logging(settings.log_level)
     app.state.engine = create_engine(settings)
-    app.state.queue = asyncio.Queue(maxsize=settings.queue_max_size)
+    app.state.queue = IngestQueue(
+        max_items=settings.queue_max_size,
+        max_bytes=settings.queue_max_bytes,
+        retry_after_s=settings.queue_retry_after_s,
+    )
     logger.info("startup complete")
     try:
         yield
     finally:
+        # Stop accepting new batches. Draining the queue needs the workers (Phase 3.3).
+        app.state.queue.close()
         await app.state.engine.dispose()
         logger.info("shutdown complete")
 
@@ -51,6 +57,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
 
     app.include_router(health.router)
+    app.include_router(ingest.router)
     return app
 
 
