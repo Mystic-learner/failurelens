@@ -1,0 +1,51 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: failurelens
+      POSTGRES_PASSWORD: failurelens
+      POSTGRES_DB: failurelens
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U failurelens -d failurelens"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # Throwaway database for the integration tests:
+  #   docker compose --profile test up -d --wait db-test
+  db-test:
+    profiles: ["test"]
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: failurelens
+      POSTGRES_PASSWORD: failurelens
+    ports:
+      - "55433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U failurelens -d postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+asyncpg://failurelens:failurelens@db:5432/failurelens
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-openai}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    stop_grace_period: 40s
+
+volumes:
+  pgdata:
