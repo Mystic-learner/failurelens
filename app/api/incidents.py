@@ -6,7 +6,7 @@ import json
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, HTTPException, Path, Query, Request
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
@@ -14,6 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from app.services.diagnosis_runner import DiagnosisRunner
 
 router = APIRouter()
+
+MAX_BIGINT = 9223372036854775807
 
 IncidentStatus = Literal["open", "diagnosing", "diagnosed", "resolved"]
 
@@ -90,6 +92,7 @@ async def post_diagnose(body: DiagnoseRequest, request: Request) -> dict[str, An
                 "level": h.level,
                 "score": h.score,
                 "fingerprint_match": h.fingerprint_match,
+                "text": h.text,
             }
             for h in core.hits
         ],
@@ -116,7 +119,9 @@ async def list_incidents(
 
 
 @router.get("/incidents/{incident_id}")
-async def get_incident(incident_id: int, request: Request) -> dict[str, Any]:
+async def get_incident(
+    request: Request, incident_id: int = Path(ge=1, le=MAX_BIGINT)
+) -> dict[str, Any]:
     sql = text(
         f"SELECT {_INCIDENT_COLS} FROM incidents i JOIN signatures s ON s.id = i.signature_id "
         "WHERE i.id = CAST(:id AS bigint)"
@@ -163,3 +168,13 @@ async def list_signatures(
             for r in rows
         ]
     }
+
+
+@router.get("/chunks/{chunk_id}")
+async def get_chunk(request: Request, chunk_id: int = Path(ge=1, le=MAX_BIGINT)) -> dict[str, Any]:
+    sql = text("SELECT id, text, service, level, ts FROM chunks WHERE id = CAST(:id AS bigint)")
+    async with _engine(request).connect() as conn:
+        row = (await conn.execute(sql, {"id": chunk_id})).first()
+    if row is None:
+        raise HTTPException(status_code=404, detail="chunk not found")
+    return {"id": int(row[0]), "text": row[1], "service": row[2], "level": row[3], "ts": row[4]}

@@ -277,6 +277,7 @@ async def test_post_diagnose_returns_verified_evidence(api: Any) -> None:
     assert body["status"] == "answered"
     assert body["result"]["evidence"][0]["quoted_line"] == FIRST_LINE
     assert body["hits"][0]["chunk_id"] == 1
+    assert body["hits"][0]["text"] == HIT_TEXT
 
 
 async def test_post_diagnose_inconclusive_retrieval(api: Any) -> None:
