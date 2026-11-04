@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health, incidents, ingest, ingest_status, search
+from app.api import health, incidents, ingest, ingest_status, search, ws
 from app.core.config import Settings, get_settings
 from app.core.db import create_engine
 from app.core.errors import register_exception_handlers
@@ -18,6 +18,7 @@ from app.services.diagnosis import OpenAILLM
 from app.services.diagnosis_runner import DiagnosisRunner, RunnerConfig
 from app.services.embedding_worker import EmbeddingWorker
 from app.services.embeddings import make_provider
+from app.services.event_hub import EventHub
 from app.services.ingest_queue import IngestQueue
 from app.services.worker_pool import WorkerPool
 
@@ -70,11 +71,21 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.diagnosis_llm = llm
         # run_forever drains pending work first, which is the cold-start recovery path.
         app.state.diagnosis_task = asyncio.create_task(runner.run_forever(app.state.diagnosis_stop))
+    app.state.event_hub = EventHub(
+        app.state.engine,
+        poll_s=settings.event_poll_s,
+        lag_s=settings.event_lag_s,
+        max_clients=settings.ws_max_clients,
+        queue_size=settings.ws_client_queue,
+        send_timeout_s=settings.ws_send_timeout_s,
+    )
+    await app.state.event_hub.start()
     logger.info("startup complete")
     try:
         yield
     finally:
         # Close the queue, drain every accepted batch, flush pending records, then disconnect.
+        await app.state.event_hub.stop()
         app.state.diagnosis_stop.set()
         if app.state.diagnosis_task is not None:
             await app.state.diagnosis_task
@@ -111,6 +122,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(ingest_status.router)
     app.include_router(search.router)
     app.include_router(incidents.router)
+    app.include_router(ws.router)
     return app
 
 

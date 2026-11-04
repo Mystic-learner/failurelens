@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     llm_timeout_s: float = Field(default=30.0, gt=0)
     llm_hourly_token_cap: int = Field(default=200_000, gt=0)
     diagnosis_runner_enabled: bool = True
+    ws_max_clients: int = Field(default=200, ge=1)
+    ws_client_queue: int = Field(default=100, ge=1)
+    ws_send_timeout_s: float = Field(default=5.0, gt=0)
+    event_lag_s: float = Field(default=5.0, ge=0)
+    event_poll_s: float = Field(default=0.5, gt=0)
     # Background embedding of stored chunks (tests turn it off and call embed_pending directly).
     embedding_worker_enabled: bool = True
     # Comma-separated list of allowed browser origins.
