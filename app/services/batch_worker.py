@@ -21,12 +21,13 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Literal
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from app.services.detector import DEFAULT_DETECTOR, DetectorConfig, detect
 from app.services.ingest_queue import IngestItem
 from app.services.parsing import BinaryInputError
 from app.services.storage import CommitResult, commit_batch, get_or_create_stream
@@ -54,6 +55,7 @@ class BatchOutcome:
     status: Status
     sequence: Sequence
     commit: CommitResult | None
+    incidents: tuple[int, ...] = ()
 
 
 def sequence_status(committed_seq: int, seq: int) -> Sequence:
@@ -65,7 +67,10 @@ def sequence_status(committed_seq: int, seq: int) -> Sequence:
 
 
 async def process_item(
-    engine: AsyncEngine, item: IngestItem, now: datetime | None = None
+    engine: AsyncEngine,
+    item: IngestItem,
+    now: datetime | None = None,
+    detector: DetectorConfig | None = DEFAULT_DETECTOR,
 ) -> BatchOutcome:
     async with engine.begin() as conn:
         stream_id = await get_or_create_stream(conn, item.service, item.source_id)
@@ -106,4 +111,7 @@ async def process_item(
         await conn.execute(
             _SQL_SAVE, {"id": stream_id, "state": json.dumps(processor.export_state())}
         )
-        return BatchOutcome("committed", sequence, result)
+        opened: list[int] = []
+        if detector is not None:
+            opened = await detect(conn, result.signatures, now or datetime.now(UTC), detector)
+        return BatchOutcome("committed", sequence, result, tuple(opened))

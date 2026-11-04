@@ -15,11 +15,13 @@ import asyncio
 import json
 import logging
 import uuid
+from datetime import UTC, datetime
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.services.batch_worker import process_item
+from app.services.detector import DEFAULT_DETECTOR, detect
 from app.services.ingest_queue import IngestItem, IngestQueue
 from app.services.storage import commit_batch
 from app.services.stream_processor import StreamProcessor
@@ -57,7 +59,7 @@ async def flush_stream(engine: AsyncEngine, stream_id: int, idle_s: float) -> bo
         processor = StreamProcessor(row.source_id)
         processor.import_state(json.loads(row.state))
         chunks = processor.flush()
-        await commit_batch(
+        result = await commit_batch(
             conn,
             stream_id=stream_id,
             service=row.service,
@@ -66,6 +68,7 @@ async def flush_stream(engine: AsyncEngine, stream_id: int, idle_s: float) -> bo
             line_count=sum(c.chunk.line_count for c in chunks),
             chunks=chunks,
         )
+        await detect(conn, result.signatures, datetime.now(UTC), DEFAULT_DETECTOR)
         await conn.execute(
             _SQL_SAVE, {"id": stream_id, "state": json.dumps(processor.export_state())}
         )
