@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -5,13 +6,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health, ingest, ingest_status, search
+from app.api import health, incidents, ingest, ingest_status, search
 from app.core.config import Settings, get_settings
 from app.core.db import create_engine
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
 from app.core.middleware import BodyLimitMiddleware
 from app.core.request_id import RequestIdMiddleware
+from app.services import retrieval
+from app.services.diagnosis import OpenAILLM
+from app.services.diagnosis_runner import DiagnosisRunner, RunnerConfig
 from app.services.embedding_worker import EmbeddingWorker
 from app.services.embeddings import make_provider
 from app.services.ingest_queue import IngestQueue
@@ -43,11 +47,39 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     if app.state.embedding_provider is not None and settings.embedding_worker_enabled:
         app.state.embedding_worker = EmbeddingWorker(app.state.engine, app.state.embedding_provider)
         app.state.embedding_worker.start()
+    app.state.diagnosis_runner = None
+    app.state.diagnosis_llm = None
+    app.state.diagnosis_task = None
+    app.state.diagnosis_stop = asyncio.Event()
+    if settings.diagnosis_runner_enabled and settings.openai_api_key:
+        llm = OpenAILLM(
+            settings.openai_api_key,
+            model=settings.llm_model,
+            timeout_s=settings.llm_timeout_s,
+        )
+        engine = app.state.engine
+        provider = app.state.embedding_provider
+
+        async def searcher(query: str) -> retrieval.SearchResult:
+            return await retrieval.search(engine, provider, query)
+
+        runner = DiagnosisRunner(
+            engine, llm, searcher, RunnerConfig(hourly_token_cap=settings.llm_hourly_token_cap)
+        )
+        app.state.diagnosis_runner = runner
+        app.state.diagnosis_llm = llm
+        # run_forever drains pending work first, which is the cold-start recovery path.
+        app.state.diagnosis_task = asyncio.create_task(runner.run_forever(app.state.diagnosis_stop))
     logger.info("startup complete")
     try:
         yield
     finally:
         # Close the queue, drain every accepted batch, flush pending records, then disconnect.
+        app.state.diagnosis_stop.set()
+        if app.state.diagnosis_task is not None:
+            await app.state.diagnosis_task
+        if app.state.diagnosis_llm is not None:
+            await app.state.diagnosis_llm.aclose()
         if app.state.embedding_worker is not None:
             await app.state.embedding_worker.stop()
         await app.state.pool.stop()
@@ -78,6 +110,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(ingest.router)
     app.include_router(ingest_status.router)
     app.include_router(search.router)
+    app.include_router(incidents.router)
     return app
 
 

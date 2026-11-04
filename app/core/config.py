@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     queue_retry_after_s: int = Field(default=1, ge=1)
     embedding_provider: Literal["openai", "local", "fake"] = "openai"
     openai_api_key: str | None = None
+    llm_model: str = "gpt-4.1-mini"
+    llm_timeout_s: float = Field(default=30.0, gt=0)
+    llm_hourly_token_cap: int = Field(default=200_000, gt=0)
+    diagnosis_runner_enabled: bool = True
     # Background embedding of stored chunks (tests turn it off and call embed_pending directly).
     embedding_worker_enabled: bool = True
     # Comma-separated list of allowed browser origins.
