@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     queue_retry_after_s: int = Field(default=1, ge=1)
     embedding_provider: Literal["openai", "local", "fake"] = "openai"
     openai_api_key: str | None = None
+    # Background embedding of stored chunks (tests turn it off and call embed_pending directly).
+    embedding_worker_enabled: bool = True
     # Comma-separated list of allowed browser origins.
     cors_origins: str = "http://localhost:5173"
     health_db_timeout_s: float = Field(default=2.0, gt=0)
