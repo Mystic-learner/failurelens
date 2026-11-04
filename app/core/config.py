@@ -8,7 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    database_url: str = "postgresql+asyncpg://failurelens:failurelens@localhost:5432/failurelens"
+    database_url: str = "postgresql+asyncpg://failurelens:failurelens@localhost:55432/failurelens"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     # Largest accepted request body. A single 1 MB log line must fit, so the default is 10 MB.
     max_body_bytes: int = Field(default=10 * 1024 * 1024, gt=0)
