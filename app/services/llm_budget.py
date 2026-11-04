@@ -54,7 +54,8 @@ async def settle(
     now: datetime | None = None,
     hour: datetime | None = None,
 ) -> None:
-    """Replace the estimate with real usage. Pass the reservation's `hour` if the call may cross an hour boundary."""
+    """Replace the estimate with real usage.
+    Pass the reservation's `hour` if the call may cross an hour boundary."""
     await session.execute(
         text(
             "UPDATE llm_usage SET tokens = GREATEST(0, tokens + :delta) WHERE hour_bucket = :hour"
