@@ -80,6 +80,7 @@ def _clean_query(query: str) -> str:
     """Postgres text cannot hold NUL; other control characters are noise in a search query."""
     return _CONTROL.sub("", query)
 
+
 def query_tokens(query: str) -> list[str]:
     seen: dict[str, None] = {}
     for token in _WORD.findall(query.lower()):
@@ -194,9 +195,7 @@ async def _load(engine: AsyncEngine, ids: list[int]) -> dict[int, Hit]:
     sql = text(f"SELECT {_COLUMNS} FROM chunks c WHERE c.id = ANY(CAST(:ids AS bigint[]))")
     async with engine.connect() as conn:
         rows = (await conn.execute(sql, {"ids": ids})).all()
-    return {
-        int(r[0]): Hit(int(r[0]), str(r[1]), r[2], r[3], r[4], r[5]) for r in rows
-    }
+    return {int(r[0]): Hit(int(r[0]), str(r[1]), r[2], r[3], r[4], r[5]) for r in rows}
 
 
 async def search(

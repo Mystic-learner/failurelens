@@ -69,21 +69,19 @@ def _jwt_ok(s: str) -> bool:
 
 _TOKEN_RULES: list[tuple[re.Pattern[str], Callable[[re.Match[str]], str]]] = [
     # JWT: eyJ<header>.<payload>.<signature>
-    _make_token_rule(
-        r"(?<![A-Za-z0-9])eyJ", r"[A-Za-z0-9_.\-]", 20, "<JWT>", _jwt_ok, False
-    ),
+    _make_token_rule(r"(?<![A-Za-z0-9])eyJ", r"[A-Za-z0-9_.\-]", 20, "<JWT>", _jwt_ok, False),
     # Bearer tokens (prefix kept so the log still reads "Bearer <TOKEN>")
     _make_token_rule(
-        r"(?i:(?<![A-Za-z0-9])Bearer[ \t]+)", r"[A-Za-z0-9._~+/=\-]", 8, "<TOKEN>",
-        _has_digit, True,
+        r"(?i:(?<![A-Za-z0-9])Bearer[ \t]+)",
+        r"[A-Za-z0-9._~+/=\-]",
+        8,
+        "<TOKEN>",
+        _has_digit,
+        True,
     ),
     # API keys
-    _make_token_rule(
-        r"(?<![A-Za-z0-9])sk-", r"[A-Za-z0-9_\-]", 16, "<API_KEY>", _always, False
-    ),
-    _make_token_rule(
-        r"(?<![A-Za-z0-9])AKIA", r"[0-9A-Z]", 16, "<API_KEY>", _always, False
-    ),
+    _make_token_rule(r"(?<![A-Za-z0-9])sk-", r"[A-Za-z0-9_\-]", 16, "<API_KEY>", _always, False),
+    _make_token_rule(r"(?<![A-Za-z0-9])AKIA", r"[0-9A-Z]", 16, "<API_KEY>", _always, False),
     _make_token_rule(
         r"(?<![A-Za-z0-9])gh[pousr]_", r"[A-Za-z0-9]", 20, "<API_KEY>", _always, False
     ),
@@ -122,13 +120,9 @@ def _kv_repl(m: re.Match[str]) -> str:
 _EMAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]{1,64}@[A-Za-z0-9.\-]{1,255}\.[A-Za-z]{2,24}")
 _CARD_RE = re.compile(r"(?<!\d)(?:\d[ \-]?){12,18}\d(?!\d)")
 _IPV4_RE = re.compile(r"(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?!\w|\.\d)")
-_IPV6_RE = re.compile(
-    r"(?<![\w:.])(?:[0-9A-Fa-f]{0,4}:){2,7}(?:[0-9A-Fa-f]{1,4}|(?<=:))(?![\w:])"
-)
+_IPV6_RE = re.compile(r"(?<![\w:.])(?:[0-9A-Fa-f]{0,4}:){2,7}(?:[0-9A-Fa-f]{1,4}|(?<=:))(?![\w:])")
 # No "=" in the lookbehind: a value right after "key=" must be examined.
-_B64_RE = re.compile(
-    r"(?<![A-Za-z0-9+/_\-])[A-Za-z0-9+/_\-]{32,}={0,2}(?![A-Za-z0-9+/=_\-])"
-)
+_B64_RE = re.compile(r"(?<![A-Za-z0-9+/_\-])[A-Za-z0-9+/_\-]{32,}={0,2}(?![A-Za-z0-9+/=_\-])")
 _HEX_ONLY = re.compile(r"[0-9a-fA-F\-]+")
 
 

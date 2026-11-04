@@ -53,9 +53,7 @@ _NUMBER_RE = re.compile(r"(?:(?<![A-Za-z])-)?\d+")
 _SPACES_RE = re.compile(r"\s+")
 
 _FRAME_RE = re.compile(r'^\s*(?:at \S|File ")')
-_EXC_LINE_RE = re.compile(
-    r"^\s*(?:Caused by:|(?:[A-Za-z_][\w.$]{0,120})?(?:Error|Exception)\b)"
-)
+_EXC_LINE_RE = re.compile(r"^\s*(?:Caused by:|(?:[A-Za-z_][\w.$]{0,120})?(?:Error|Exception)\b)")
 
 
 def normalize_line(line: str) -> str:
@@ -97,11 +95,35 @@ def signature_lines(text: str) -> list[str]:
 
 # ------------------------------------------------------------------ error tokens
 _ERRNO_NAMES = (
-    "ECONNRESET", "ECONNREFUSED", "ECONNABORTED", "ETIMEDOUT", "ENOENT", "EACCES",
-    "EPERM", "EEXIST", "EADDRINUSE", "EADDRNOTAVAIL", "EPIPE", "EAGAIN", "EINTR",
-    "EIO", "ENOSPC", "ENOMEM", "EMFILE", "ENFILE", "EHOSTUNREACH", "ENETUNREACH",
-    "ENOTFOUND", "EAI_AGAIN", "EBUSY", "EISDIR", "ENOTDIR", "ENOTEMPTY", "EINVAL",
-    "EROFS", "EDQUOT",
+    "ECONNRESET",
+    "ECONNREFUSED",
+    "ECONNABORTED",
+    "ETIMEDOUT",
+    "ENOENT",
+    "EACCES",
+    "EPERM",
+    "EEXIST",
+    "EADDRINUSE",
+    "EADDRNOTAVAIL",
+    "EPIPE",
+    "EAGAIN",
+    "EINTR",
+    "EIO",
+    "ENOSPC",
+    "ENOMEM",
+    "EMFILE",
+    "ENFILE",
+    "EHOSTUNREACH",
+    "ENETUNREACH",
+    "ENOTFOUND",
+    "EAI_AGAIN",
+    "EBUSY",
+    "EISDIR",
+    "ENOTDIR",
+    "ENOTEMPTY",
+    "EINVAL",
+    "EROFS",
+    "EDQUOT",
 )
 _ERRNO_NAME_RE = re.compile(r"\b(" + "|".join(_ERRNO_NAMES) + r")\b")
 _ERRNO_NUM_RE = re.compile(r"\berrno\s*[=:]?\s*\(?(-?\d{1,5})\b", re.IGNORECASE)

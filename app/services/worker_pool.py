@@ -154,7 +154,10 @@ class WorkerPool:
             except Exception as exc:
                 logger.warning(
                     "batch attempt %d failed (service=%s seq=%d): %s",
-                    attempt + 1, item.service, item.seq, type(exc).__name__,
+                    attempt + 1,
+                    item.service,
+                    item.seq,
+                    type(exc).__name__,
                 )
                 if attempt < self._retries - 1:
                     await asyncio.sleep(self._retry_delay_s * 2**attempt)

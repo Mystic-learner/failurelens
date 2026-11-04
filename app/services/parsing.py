@@ -229,9 +229,7 @@ def _json_ts(value: object, default_tz: tzinfo) -> datetime | None:
     return dt if dt.year >= MIN_YEAR else None
 
 
-def parse_json_line(
-    line: str, default_tz: tzinfo
-) -> tuple[datetime | None, str | None] | None:
+def parse_json_line(line: str, default_tz: tzinfo) -> tuple[datetime | None, str | None] | None:
     """(timestamp, level) of a JSON log line, or None if it is not a JSON object."""
     try:
         data = json.loads(line)
@@ -370,10 +368,7 @@ class StreamParser:
             if not is_json:
                 ts = parse_timestamp(line, self._tz, now)
             starts_new = (
-                is_json
-                or ts is not None
-                or self._pending is None
-                or not _is_continuation(line)
+                is_json or ts is not None or self._pending is None or not _is_continuation(line)
             )
             if starts_new:
                 if self._pending is not None:
