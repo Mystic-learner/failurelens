@@ -1,4 +1,5 @@
-"""Hourly LLM token budget with an atomic reserve."""
+"""Hourly LLM token budget with an atomic reserve (table: llm_usage)."""
+
 from __future__ import annotations
 
 from datetime import UTC, datetime
@@ -21,19 +22,20 @@ def estimate_tokens(prompt_chars: int) -> int:
 async def reserve(
     session: AsyncSession, tokens: int, cap: int, now: datetime | None = None
 ) -> bool:
-    """Reserve tokens for the current hour. Returns False when it would exceed the cap.
+    """Reserve tokens for the current hour. False when it would exceed the cap.
 
-    Commits immediately so the row lock is held as briefly as possible.
+    One atomic upsert: the WHERE on the conflict branch rejects over-cap
+    reservations, in which case no row is returned. Commits immediately.
     """
     if tokens > cap:
         return False
     result = await session.execute(
         text(
             """
-            INSERT INTO llm_usage (hour, tokens, calls) VALUES (:hour, :n, 1)
-            ON CONFLICT (hour) DO UPDATE
+            INSERT INTO llm_usage (hour_bucket, tokens, count) VALUES (:hour, :n, 1)
+            ON CONFLICT (hour_bucket) DO UPDATE
                SET tokens = llm_usage.tokens + EXCLUDED.tokens,
-                   calls = llm_usage.calls + 1
+                   count = llm_usage.count + 1
              WHERE llm_usage.tokens + EXCLUDED.tokens <= :cap
             RETURNING tokens
             """
@@ -46,19 +48,26 @@ async def reserve(
 
 
 async def settle(
-    session: AsyncSession, reserved: int, actual: int, now: datetime | None = None
+    session: AsyncSession,
+    reserved: int,
+    actual: int,
+    now: datetime | None = None,
+    hour: datetime | None = None,
 ) -> None:
-    """Replace the estimate with real usage (may exceed the cap slightly; never below zero)."""
+    """Replace the estimate with real usage. Pass the reservation's `hour` if the call may cross an hour boundary."""
     await session.execute(
-        text("UPDATE llm_usage SET tokens = GREATEST(0, tokens + :delta) WHERE hour = :hour"),
-        {"hour": hour_start(now), "delta": actual - reserved},
+        text(
+            "UPDATE llm_usage SET tokens = GREATEST(0, tokens + :delta) WHERE hour_bucket = :hour"
+        ),
+        {"hour": hour or hour_start(now), "delta": actual - reserved},
     )
     await session.commit()
 
 
 async def used_this_hour(session: AsyncSession, now: datetime | None = None) -> int:
     result = await session.execute(
-        text("SELECT tokens FROM llm_usage WHERE hour = :hour"), {"hour": hour_start(now)}
+        text("SELECT tokens FROM llm_usage WHERE hour_bucket = :hour"),
+        {"hour": hour_start(now)},
     )
     row = result.first()
     return int(row[0]) if row else 0

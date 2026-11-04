@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: failurelens
       POSTGRES_DB: failurelens
     ports:
-      - "5432:5432"
+      - "55432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
