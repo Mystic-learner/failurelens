@@ -1,3 +1,5 @@
+import json
+
 import httpx
 import pytest
 
@@ -75,24 +77,37 @@ async def test_network_errors_are_retryable_not_raised(exc: Exception) -> None:
 
 
 @pytest.mark.asyncio
-async def test_committed_seq_reads_the_status_endpoint() -> None:
-    seen: dict[str, str] = {}
+async def test_committed_keys_posts_the_keys_and_returns_the_confirmed_ones() -> None:
+    seen: dict[str, object] = {}
 
     def handler(request: httpx.Request) -> httpx.Response:
-        seen.update(request.url.params)
-        return httpx.Response(200, json={"committed_seq": 5})
+        seen["method"] = request.method
+        seen["path"] = request.url.path
+        seen["body"] = json.loads(request.content)
+        return httpx.Response(200, json={"committed": ["a", "c"]})
 
-    assert await client_for(handler).committed_seq() == 5
-    assert seen == {"service": "svc", "source_id": "src"}
+    assert await client_for(handler).committed_keys(["a", "b", "c"]) == {"a", "c"}
+    assert seen["method"] == "POST"
+    assert seen["path"] == "/ingest/committed"
+    assert seen["body"] == {"service": "svc", "source_id": "src", "keys": ["a", "b", "c"]}
 
 
 @pytest.mark.asyncio
-async def test_committed_seq_is_none_when_unreachable_or_nonsense() -> None:
+async def test_committed_keys_with_no_keys_makes_no_request() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise AssertionError("no request expected")
+
+    assert await client_for(handler).committed_keys([]) == set()
+
+
+@pytest.mark.asyncio
+async def test_committed_keys_is_none_when_unreachable_or_nonsense() -> None:
     def down(request: httpx.Request) -> httpx.Response:
         raise httpx.ConnectError("x")
 
-    assert await client_for(down).committed_seq() is None
-    assert await client_for(lambda r: httpx.Response(503)).committed_seq() is None
-    assert await client_for(lambda r: httpx.Response(200, content=b"not json")).committed_seq() is None
-    for body in ({}, {"committed_seq": -1}, {"committed_seq": True}, {"committed_seq": "5"}, [1]):
-        assert await client_for(lambda r, b=body: httpx.Response(200, json=b)).committed_seq() is None
+    assert await client_for(down).committed_keys(["a"]) is None
+    assert await client_for(lambda r: httpx.Response(503)).committed_keys(["a"]) is None
+    assert await client_for(lambda r: httpx.Response(200, content=b"not json")).committed_keys(["a"]) is None
+    for body in ({}, {"committed": "a"}, {"committed": [1]}, {"committed": None}, [1]):
+        got = await client_for(lambda r, b=body: httpx.Response(200, json=b)).committed_keys(["a"])
+        assert got is None

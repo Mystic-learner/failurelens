@@ -3,7 +3,9 @@
 One file per batch, named by sequence number: <seq:020d>.batch
 File layout: one JSON header line, then the raw batch bytes. The header carries the batch
 metadata and the data length, so a truncated file is detected and quarantined (renamed to
-.corrupt) instead of being sent.
+.corrupt) instead of being sent. The idempotency key of every spooled batch is also kept in
+memory (read from the header at startup) so the forwarder can ask the server which keys are
+committed without re-reading the batch files.
 
 Files are written atomically (temp file, fsync, os.replace). The spool is bounded: put()
 returns False when it is full (an oversized batch is still accepted into an EMPTY spool so
@@ -22,10 +24,20 @@ from shipper.reader import Batch
 logger = logging.getLogger("failurelens.shipper")
 
 _SUFFIX = ".batch"
+_HEADER_MAX = 65_536
 
 
 def _name(seq: int) -> str:
     return f"{seq:020d}{_SUFFIX}"
+
+
+def _read_key(path: Path) -> str:
+    with open(path, "rb") as fh:
+        header_raw = fh.readline(_HEADER_MAX)
+    header = json.loads(header_raw)
+    if not isinstance(header, dict):
+        raise ValueError("bad header")
+    return str(header["key"])
 
 
 def _read(path: Path) -> Batch:
@@ -57,14 +69,20 @@ class Spool:
         self._fsync = fsync
         self.corrupt: list[str] = []
         self._sizes: dict[int, int] = {}
+        self._keys: dict[int, str] = {}
         directory.mkdir(parents=True, exist_ok=True)
         for tmp in directory.glob("*.tmp"):
             tmp.unlink(missing_ok=True)  # half-written file from a crash
         for path in directory.glob(f"*{_SUFFIX}"):
             try:
-                self._sizes[int(path.stem)] = path.stat().st_size
-            except (ValueError, OSError):
+                seq = int(path.stem)
+                key = _read_key(path)
+                size = path.stat().st_size
+            except (ValueError, KeyError, TypeError, OSError):
                 self._quarantine(path)
+                continue
+            self._sizes[seq] = size
+            self._keys[seq] = key
 
     def __len__(self) -> int:
         return len(self._sizes)
@@ -75,6 +93,10 @@ class Spool:
 
     def pending_seqs(self) -> list[int]:
         return sorted(self._sizes)
+
+    def pending(self) -> list[tuple[int, str]]:
+        """(seq, idempotency key) of every spooled batch, oldest first."""
+        return [(seq, self._keys[seq]) for seq in sorted(self._sizes)]
 
     def put(self, batch: Batch) -> bool:
         """Store the batch durably. False if the spool is full. Same seq twice is a no-op."""
@@ -104,6 +126,7 @@ class Spool:
                 os.fsync(fh.fileno())
         os.replace(tmp, final)
         self._sizes[batch.seq] = len(payload)
+        self._keys[batch.seq] = batch.key
         return True
 
     def peek(self) -> Batch | None:
@@ -113,12 +136,24 @@ class Spool:
             try:
                 return _read(path)
             except (OSError, ValueError, KeyError, TypeError):
-                self._sizes.pop(seq, None)
+                self._forget(seq)
                 self._quarantine(path)
         return None
 
+    def get(self, seq: int) -> Batch | None:
+        """The batch with this sequence number, or None. Unreadable files are quarantined."""
+        if seq not in self._sizes:
+            return None
+        path = self._dir / _name(seq)
+        try:
+            return _read(path)
+        except (OSError, ValueError, KeyError, TypeError):
+            self._forget(seq)
+            self._quarantine(path)
+            return None
+
     def pop(self, seq: int) -> None:
-        self._sizes.pop(seq, None)
+        self._forget(seq)
         (self._dir / _name(seq)).unlink(missing_ok=True)
 
     def prune_through(self, committed_seq: int) -> int:
@@ -127,6 +162,10 @@ class Spool:
         for seq in done:
             self.pop(seq)
         return len(done)
+
+    def _forget(self, seq: int) -> None:
+        self._sizes.pop(seq, None)
+        self._keys.pop(seq, None)
 
     def _quarantine(self, path: Path) -> None:
         target = path.with_name(path.name + ".corrupt")
@@ -137,14 +176,13 @@ class Spool:
         self.corrupt.append(path.name)
         logger.warning("spool file %s is unreadable and was quarantined", path.name)
 
-    def get(self, seq: int) -> Batch | None:
-        """The batch with this sequence number, or None. Unreadable files are quarantined."""
+    def key_of(self, seq: int) -> str | None:
+        """Idempotency key of a spooled batch, reading only the header line."""
         if seq not in self._sizes:
             return None
-        path = self._dir / _name(seq)
         try:
-            return _read(path)
+            with open(self._dir / _name(seq), "rb") as fh:
+                header = json.loads(fh.readline())
+            return str(header["key"])
         except (OSError, ValueError, KeyError, TypeError):
-            self._sizes.pop(seq, None)
-            self._quarantine(path)
             return None

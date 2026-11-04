@@ -4,8 +4,9 @@ send() never raises for network or HTTP problems; it returns a SendResult:
   accepted  2xx: the server queued the batch (NOT yet committed to the database)
   retry     timeout, connection error, 408/425/429/5xx: try again later, same batch
   rejected  any other status (400, 401, 413, 422 ...): resending cannot help
-committed_seq() asks the server how far the stream is durably committed, or None if it
-cannot be reached or answers nonsense.
+committed_keys() asks the server which of the given idempotency keys are durably committed.
+It returns None if the server cannot be reached or answers nonsense, so the caller keeps
+everything in that case.
 """
 
 from __future__ import annotations
@@ -68,18 +69,20 @@ class IngestClient:
             )
         return SendResult("rejected", status, detail=f"HTTP {status}")
 
-    async def committed_seq(self) -> int | None:
-        params = {"service": self._service, "source_id": self._source_id}
+    async def committed_keys(self, keys: list[str]) -> set[str] | None:
+        if not keys:
+            return set()
+        body = {"service": self._service, "source_id": self._source_id, "keys": keys}
         try:
-            resp = await self._http.get("/ingest/status", params=params)
+            resp = await self._http.post("/ingest/committed", json=body)
         except httpx.HTTPError:
             return None
         if resp.status_code != 200:
             return None
         try:
-            value = resp.json()["committed_seq"]
+            raw = resp.json()["committed"]
         except (ValueError, KeyError, TypeError):
             return None
-        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        if not isinstance(raw, list) or not all(isinstance(k, str) for k in raw):
             return None
-        return value
+        return {str(k) for k in raw}

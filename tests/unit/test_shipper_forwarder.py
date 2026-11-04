@@ -18,14 +18,16 @@ class FakeClient:
     def __init__(self) -> None:
         self.sent: list[int] = []
         self.results: list[SendResult] = []
-        self.committed: int | None = 0
+        self.committed: set[str] | None = set()
+        self.asked: list[list[str]] = []
 
     async def send(self, batch: Batch) -> SendResult:
         self.sent.append(batch.seq)
         return self.results.pop(0) if self.results else SendResult("accepted", 202)
 
-    async def committed_seq(self) -> int | None:
-        return self.committed
+    async def committed_keys(self, keys: list[str]) -> set[str] | None:
+        self.asked.append(keys)
+        return None if self.committed is None else self.committed & set(keys)
 
 
 class Clock:
@@ -57,23 +59,34 @@ async def test_idle_when_the_spool_is_empty(tmp_path: Path) -> None:
     forwarder, client, _, _ = make(tmp_path, 0, idle_s=0.5)
     assert await forwarder.step() == 0.5
     assert client.sent == []
+    assert client.asked == []
 
 
 @pytest.mark.asyncio
-async def test_sends_in_order_and_keeps_batches_until_committed(tmp_path: Path) -> None:
+async def test_sends_in_order_and_keeps_batches_until_their_key_is_committed(tmp_path: Path) -> None:
     forwarder, client, spool, _ = make(tmp_path, 3, poll_s=0.2)
     assert await forwarder.step() == 0.2
     assert client.sent == [1, 2, 3]
     assert spool.pending_seqs() == [1, 2, 3]  # accepted is not committed
 
-    client.committed = 2
+    client.committed = {"key1", "key2"}
     await forwarder.step()
     assert spool.pending_seqs() == [3]
     assert client.sent == [1, 2, 3]  # 3 is not resent while we wait for its commit
 
-    client.committed = 3
+    client.committed = {"key1", "key2", "key3"}
     assert await forwarder.step() == 0.5
     assert len(spool) == 0
+    assert forwarder.confirmed == 3
+
+
+@pytest.mark.asyncio
+async def test_out_of_order_commit_removes_only_that_batch(tmp_path: Path) -> None:
+    forwarder, client, spool, _ = make(tmp_path, 3)
+    await forwarder.step()
+    client.committed = {"key3"}  # batch 3 committed, 1 and 2 not (e.g. dropped by a worker)
+    await forwarder.step()
+    assert spool.pending_seqs() == [1, 2]
 
 
 @pytest.mark.asyncio
@@ -84,7 +97,7 @@ async def test_retry_stops_the_step_and_returns_a_backoff_delay(tmp_path: Path) 
     assert client.sent == [1]
     assert spool.pending_seqs() == [1, 2, 3]
 
-    await forwarder.step()  # server is back: everything goes out, starting at batch 1 again
+    await forwarder.step()
     assert client.sent == [1, 1, 2, 3]
 
 
@@ -94,11 +107,11 @@ async def test_backoff_grows_and_resets_after_a_success(tmp_path: Path) -> None:
     client.results = [SendResult("retry"), SendResult("retry"), SendResult("accepted", 202)]
     assert await forwarder.step() == 0.5
     assert await forwarder.step() == 1.0
-    await forwarder.step()
+    await forwarder.step()  # success resets the attempt counter
     client.results = [SendResult("retry")]
-    forwarder2, client2, _, _ = make(tmp_path / "other", 1)
-    client2.results = [SendResult("retry")]
-    assert await forwarder2.step() == 0.5
+    client.committed = set()
+    forwarder._sent.clear()  # noqa: SLF001 - force a resend to observe the delay
+    assert await forwarder.step() == 0.5
 
 
 @pytest.mark.asyncio
@@ -139,13 +152,10 @@ async def test_unreachable_status_endpoint_prunes_nothing(tmp_path: Path) -> Non
 
 
 @pytest.mark.asyncio
-async def test_committed_never_moves_backwards(tmp_path: Path) -> None:
-    forwarder, client, _, _ = make(tmp_path, 2)
-    client.committed = 2
+async def test_status_query_is_capped(tmp_path: Path) -> None:
+    forwarder, client, _, _ = make(tmp_path, 5, max_status_keys=2)
     await forwarder.step()
-    client.committed = 0  # e.g. a stale replica answered
-    await forwarder.step()
-    assert forwarder.committed == 2
+    assert client.asked == [["key1", "key2"]]
 
 
 @pytest.mark.asyncio
@@ -157,11 +167,13 @@ async def test_a_step_sends_at_most_max_sends(tmp_path: Path) -> None:
     assert client.sent == [1, 2, 3, 4]
 
 
-def test_spool_get_returns_the_batch_or_none(tmp_path: Path) -> None:
+def test_spool_get_and_key_of(tmp_path: Path) -> None:
     spool = Spool(tmp_path / "spool", fsync=False)
     spool.put(batch(4))
     assert spool.get(4) == batch(4)
     assert spool.get(5) is None
+    assert spool.key_of(4) == "key4"
+    assert spool.key_of(5) is None
 
 
 def test_invalid_settings_are_rejected(tmp_path: Path) -> None:

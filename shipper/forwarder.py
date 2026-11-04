@@ -1,20 +1,17 @@
-"""Moves batches from the disk spool to the server and removes them only once committed.
+"""Moves batches from the disk spool to the server and removes each only once committed.
 
 step() does one unit of work and returns how many seconds the caller should wait before
-calling it again (0.0 means "call again right away"). It never sleeps itself, which keeps it
-easy to test; the CLI loop does the sleeping.
+calling it again (0.0 = call again right away). It never sleeps; the CLI loop does.
 
 Delivery rules:
-- Batches are sent in sequence order. A 2xx only means "queued on the server", so the batch
-  stays in the spool until the server's committed_seq covers it.
-- A batch that was accepted but not confirmed within resend_after_s is sent again with the
-  same idempotency key (covers a server crash after the 202; the server drops duplicates).
+- Batches are sent in sequence order. A 2xx only means "queued on the server", so a batch
+  stays in the spool until the server confirms ITS OWN idempotency key as committed. No
+  sequence watermark is used, so out-of-order commits can never cause a premature delete.
+- A batch accepted but not confirmed within resend_after_s is sent again with the same key
+  (covers a server crash after the 202; the server drops duplicates).
 - Retryable failures stop the step and return a backoff delay. Retry-After is honoured.
-- A batch the server rejects outright (400/413/422 ...) is dropped from the spool and
-  recorded in `dropped`, otherwise it would block every batch behind it forever.
-
-Assumes the server commits the batches of one stream in sequence order, so that
-committed_seq >= N means batches 1..N are all stored.
+- A batch the server rejects outright (400/413/422 ...) is dropped and recorded in `dropped`,
+  otherwise it would block every batch behind it forever.
 """
 
 from __future__ import annotations
@@ -32,7 +29,7 @@ from shipper.spool import Spool
 class Sender(Protocol):
     async def send(self, batch: Batch) -> SendResult: ...
 
-    async def committed_seq(self) -> int | None: ...
+    async def committed_keys(self, keys: list[str]) -> set[str] | None: ...
 
 
 class Forwarder:
@@ -46,9 +43,12 @@ class Forwarder:
         poll_s: float = 0.2,
         idle_s: float = 0.5,
         max_sends_per_step: int = 50,
+        max_status_keys: int = 1000,
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
-        if resend_after_s <= 0 or max_sends_per_step <= 0 or poll_s < 0 or idle_s < 0:
+        if resend_after_s <= 0 or max_sends_per_step <= 0 or max_status_keys <= 0:
+            raise ValueError("invalid forwarder settings")
+        if poll_s < 0 or idle_s < 0:
             raise ValueError("invalid forwarder settings")
         self._spool = spool
         self._client = client
@@ -57,17 +57,31 @@ class Forwarder:
         self._poll_s = poll_s
         self._idle_s = idle_s
         self._max_sends = max_sends_per_step
+        self._max_keys = max_status_keys
         self._clock = clock
         self._sent: dict[int, float] = {}
         self._attempt = 0
-        self.committed = 0
+        self.confirmed = 0
         self.dropped: list[tuple[int, str]] = []
 
+    async def _confirm(self) -> None:
+        keys: dict[int, str] = {}
+        for seq in self._spool.pending_seqs()[: self._max_keys]:
+            key = self._spool.key_of(seq)
+            if key is not None:
+                keys[seq] = key
+        if not keys:
+            return
+        remote = await self._client.committed_keys(list(keys.values()))
+        if remote is None:
+            return
+        for seq, key in keys.items():
+            if key in remote:
+                self._spool.pop(seq)
+                self.confirmed += 1
+
     async def step(self) -> float:
-        remote = await self._client.committed_seq()
-        if remote is not None:
-            self.committed = max(self.committed, remote)
-            self._spool.prune_through(self.committed)
+        await self._confirm()
         live = set(self._spool.pending_seqs())
         self._sent = {s: t for s, t in self._sent.items() if s in live}
 

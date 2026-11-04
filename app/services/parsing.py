@@ -212,7 +212,7 @@ def _json_ts(value: object, default_tz: tzinfo) -> datetime | None:
     try:
         if isinstance(value, bool):
             return None
-        if isinstance(value, (int, float)):
+        if isinstance(value, int | float):
             seconds = float(value)
             if seconds > 1e11:  # milliseconds
                 seconds /= 1000
