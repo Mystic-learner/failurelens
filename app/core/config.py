@@ -1,8 +1,11 @@
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_DEFAULT_MODEL_DIR = Path(__file__).resolve().parents[2] / "models" / "bge-small-en-v1.5"
 
 
 class Settings(BaseSettings):
@@ -17,6 +20,8 @@ class Settings(BaseSettings):
     queue_max_bytes: int = Field(default=64 * 1024 * 1024, gt=0)
     queue_retry_after_s: int = Field(default=1, ge=1)
     embedding_provider: Literal["openai", "local", "fake"] = "openai"
+    # Directory with model.onnx and tokenizer.json for the local provider.
+    local_model_dir: str = str(_DEFAULT_MODEL_DIR)
     openai_api_key: str | None = None
     llm_model: str = "gpt-4.1-mini"
     llm_timeout_s: float = Field(default=30.0, gt=0)

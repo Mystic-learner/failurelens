@@ -12,6 +12,7 @@ from app.models.schemas import (
     HealthResponse,
     QueueHealth,
 )
+from app.services.embeddings import local_provider_available
 from app.services.ingest_queue import IngestQueue
 
 router = APIRouter()
@@ -23,7 +24,7 @@ def embedding_configured(settings: Settings) -> bool:
         return bool(settings.openai_api_key)
     if settings.embedding_provider == "fake":
         return True
-    return False  # "local": the ONNX model arrives in Phase 8
+    return local_provider_available(settings)
 
 
 @router.get("/health", response_model=HealthResponse, responses={503: {"model": HealthResponse}})

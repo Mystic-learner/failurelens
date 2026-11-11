@@ -13,6 +13,8 @@ import asyncio
 import hashlib
 import math
 import re
+from importlib.util import find_spec
+from pathlib import Path
 from typing import Protocol
 
 import httpx
@@ -114,10 +116,31 @@ class OpenAIEmbeddingProvider:
         return vectors
 
 
+_LOCAL_PACKAGES = ("onnxruntime", "tokenizers", "numpy")
+_LOCAL_FILES = ("model.onnx", "tokenizer.json")  # keep in step with embeddings_local
+
+
+def local_provider_available(settings: Settings) -> bool:
+    """Whether the local provider can run: optional packages installed, model files present.
+
+    Nothing is imported or loaded here, so the health check can call it cheaply.
+    """
+    if any(find_spec(pkg) is None for pkg in _LOCAL_PACKAGES):
+        return False
+    base = Path(settings.local_model_dir)
+    return all((base / name).is_file() for name in _LOCAL_FILES)
+
+
 def make_provider(settings: Settings) -> EmbeddingProvider | None:
-    """The configured provider, or None when it cannot run (no key; local arrives in Phase 8)."""
+    """The configured provider, or None when it cannot run (no key, or local without its
+    packages or model files)."""
     if settings.embedding_provider == "fake":
         return FakeEmbeddingProvider()
     if settings.embedding_provider == "openai" and settings.openai_api_key:
         return OpenAIEmbeddingProvider(settings.openai_api_key)
+    if settings.embedding_provider == "local" and local_provider_available(settings):
+        # Imported here: embeddings_local imports EmbeddingError from this module.
+        from app.services.embeddings_local import LocalEmbeddingProvider
+
+        return LocalEmbeddingProvider(settings.local_model_dir)
     return None

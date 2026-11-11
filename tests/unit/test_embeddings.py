@@ -160,7 +160,10 @@ async def test_openai_malformed_or_wrong_size_responses_are_errors(
 def test_make_provider_follows_the_settings() -> None:
     assert make_provider(make_settings(embedding_provider="fake")).name == "fake"  # type: ignore[union-attr]
     assert make_provider(make_settings(embedding_provider="openai", openai_api_key=None)) is None
-    assert make_provider(make_settings(embedding_provider="local")) is None
+    assert (
+        make_provider(make_settings(embedding_provider="local", local_model_dir="no-such-dir"))
+        is None
+    )
     provider = make_provider(make_settings(embedding_provider="openai", openai_api_key="sk-x"))
     assert provider is not None
     assert provider.table == "chunk_embeddings_openai"
