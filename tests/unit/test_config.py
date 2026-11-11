@@ -22,7 +22,7 @@ def test_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     s = make()
     assert s.database_url.startswith("postgresql+asyncpg://")
     assert s.queue_max_size == 1000
-    assert s.embedding_provider == "openai"
+    assert s.embedding_provider == "local"
     assert s.max_body_bytes == 10 * 1024 * 1024
     assert s.openai_api_key is None
 

@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     queue_max_size: int = Field(default=1000, gt=0)
     queue_max_bytes: int = Field(default=64 * 1024 * 1024, gt=0)
     queue_retry_after_s: int = Field(default=1, ge=1)
-    embedding_provider: Literal["openai", "local", "fake"] = "openai"
+    embedding_provider: Literal["openai", "local", "fake"] = "local"
     # Directory with model.onnx and tokenizer.json for the local provider.
     local_model_dir: str = str(_DEFAULT_MODEL_DIR)
     openai_api_key: str | None = None
