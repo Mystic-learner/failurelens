@@ -42,12 +42,15 @@ services:
       DATABASE_URL: postgresql+asyncpg://failurelens:failurelens@db:5432/failurelens
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      LOCAL_MODEL_DIR: /models/bge-small-en-v1.5
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     depends_on:
       db:
         condition: service_healthy
     ports:
       - "8000:8000"
+    volumes:
+      - ./models:/models:ro
     stop_grace_period: 40s
 
 volumes:

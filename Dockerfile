@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -9,7 +9,7 @@ COPY pyproject.toml alembic.ini ./
 COPY app ./app
 COPY shipper ./shipper
 COPY alembic ./alembic
-RUN pip install .
+RUN pip install ".[local]"
 
 RUN useradd --create-home appuser
 USER appuser
