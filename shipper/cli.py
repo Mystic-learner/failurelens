@@ -93,6 +93,7 @@ def _open_feed(feed: Path) -> BinaryIO:
     feed.parent.mkdir(parents=True, exist_ok=True)
     return open(feed, "ab")  # noqa: SIM115 - closed by pump()
 
+
 async def pump(lines: AsyncIterator[bytes], feed: Path) -> None:
     """Append every line to the feed file (adding a newline if missing)."""
     fh = _open_feed(feed)
@@ -126,7 +127,12 @@ async def stdin_lines() -> AsyncIterator[bytes]:
 
 async def docker_lines(container: str) -> AsyncIterator[bytes]:
     proc = await asyncio.create_subprocess_exec(
-        "docker", "logs", "--follow", "--tail", "0", container,
+        "docker",
+        "logs",
+        "--follow",
+        "--tail",
+        "0",
+        container,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
     )

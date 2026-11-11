@@ -28,7 +28,9 @@ def queue_of(client: httpx.AsyncClient) -> IngestQueue:
 
 
 async def test_valid_batch_is_accepted_and_queued(client: httpx.AsyncClient) -> None:
-    response = await client.post(URL, content=b"2024-01-01 10:00:00 ERROR boom\n", headers=headers())
+    response = await client.post(
+        URL, content=b"2024-01-01 10:00:00 ERROR boom\n", headers=headers()
+    )
     assert response.status_code == 202
     assert response.json() == {"status": "accepted", "queue_depth": 1}
     assert response.headers["x-request-id"]
@@ -52,9 +54,7 @@ async def test_whitespace_only_body_is_accepted(client: httpx.AsyncClient) -> No
     assert queue_of(client).depth == 1
 
 
-@pytest.mark.parametrize(
-    "missing", ["X-Service", "X-Source-Id", "Idempotency-Key", "X-Sequence"]
-)
+@pytest.mark.parametrize("missing", ["X-Service", "X-Source-Id", "Idempotency-Key", "X-Sequence"])
 async def test_missing_header_is_422(client: httpx.AsyncClient, missing: str) -> None:
     h = headers()
     del h[missing]
@@ -85,7 +85,9 @@ async def test_overlong_header_is_422(client: httpx.AsyncClient) -> None:
 
 async def test_full_queue_is_429_with_retry_after(client: httpx.AsyncClient) -> None:
     for i in range(5):
-        assert (await client.post(URL, content=b"x", headers=headers(i, f"k{i}"))).status_code == 202
+        assert (
+            await client.post(URL, content=b"x", headers=headers(i, f"k{i}"))
+        ).status_code == 202
     response = await client.post(URL, content=b"x", headers=headers(9, "k9"))
     assert response.status_code == 429
     assert response.headers["retry-after"] == "1"

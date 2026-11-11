@@ -57,7 +57,9 @@ async def test_indexes_use_the_required_methods(engine: AsyncEngine) -> None:
 async def test_each_provider_has_its_own_vector_dimension(engine: AsyncEngine) -> None:
     chunk_id = await new_chunk(engine, "e", "h-dim")
     other_chunk_id = await new_chunk(engine, "e2", "h-dim-2")
-    insert = "INSERT INTO {table} (chunk_id, embedding) VALUES (:id, CAST(CAST(:v AS text) AS vector))"
+    insert = (
+        "INSERT INTO {table} (chunk_id, embedding) VALUES (:id, CAST(CAST(:v AS text) AS vector))"
+    )
     async with engine.begin() as conn:
         await conn.execute(
             text(insert.format(table="chunk_embeddings_openai")),
@@ -118,17 +120,23 @@ async def test_deleting_a_document_cascades_to_chunks_and_embeddings(engine: Asy
     async with engine.begin() as conn:
         doc_id = (
             await conn.execute(
-                text("INSERT INTO documents (source_id, filename) VALUES ('s', 'f.log') RETURNING id")
+                text(
+                    "INSERT INTO documents (source_id, filename) VALUES ('s', 'f.log') RETURNING id"
+                )
             )
         ).scalar_one()
         chunk_id = (
             await conn.execute(
-                text("INSERT INTO chunks (document_id, text, chunk_hash) VALUES (:d, 't', 'h-doc') RETURNING id"),
+                text(
+                    "INSERT INTO chunks (document_id, text, chunk_hash) VALUES (:d, 't', 'h-doc') RETURNING id"
+                ),
                 {"d": doc_id},
             )
         ).scalar_one()
         await conn.execute(
-            text("INSERT INTO chunk_embeddings_local (chunk_id, embedding) VALUES (:c, CAST(CAST(:v AS text) AS vector))"),
+            text(
+                "INSERT INTO chunk_embeddings_local (chunk_id, embedding) VALUES (:c, CAST(CAST(:v AS text) AS vector))"
+            ),
             {"c": chunk_id, "v": vector_literal(384)},
         )
     async with engine.begin() as conn:
@@ -154,7 +162,9 @@ async def test_incident_check_constraints(engine: AsyncEngine, column: str, valu
     async with engine.begin() as conn:
         sig_id = (
             await conn.execute(
-                text("INSERT INTO signatures (service, fingerprint) VALUES ('svc', 'fp') RETURNING id")
+                text(
+                    "INSERT INTO signatures (service, fingerprint) VALUES ('svc', 'fp') RETURNING id"
+                )
             )
         ).scalar_one()
     values = {"trigger": "new_signature", "status": "open", column: value}
@@ -170,7 +180,9 @@ async def test_incident_defaults(engine: AsyncEngine) -> None:
     async with engine.begin() as conn:
         sig_id = (
             await conn.execute(
-                text("INSERT INTO signatures (service, fingerprint) VALUES ('svc', 'fp') RETURNING id")
+                text(
+                    "INSERT INTO signatures (service, fingerprint) VALUES ('svc', 'fp') RETURNING id"
+                )
             )
         ).scalar_one()
         row = (
@@ -194,14 +206,18 @@ async def test_ingest_batches_idempotency_key_is_unique_per_stream(engine: Async
         s1, s2 = [
             (
                 await conn.execute(
-                    text("INSERT INTO streams (service, source_id) VALUES ('svc', :src) RETURNING id"),
+                    text(
+                        "INSERT INTO streams (service, source_id) VALUES ('svc', :src) RETURNING id"
+                    ),
                     {"src": src},
                 )
             ).scalar_one()
             for src in ("a", "b")
         ]
         await conn.execute(text(insert), {"s": s1, "k": "key-1"})
-        again = await conn.execute(text(insert + " ON CONFLICT DO NOTHING"), {"s": s1, "k": "key-1"})
+        again = await conn.execute(
+            text(insert + " ON CONFLICT DO NOTHING"), {"s": s1, "k": "key-1"}
+        )
         other_stream = await conn.execute(text(insert), {"s": s2, "k": "key-1"})
     assert again.rowcount == 0  # duplicate batch is ignored
     assert other_stream.rowcount == 1  # same key on another stream is a different batch
@@ -213,7 +229,9 @@ async def test_ingest_batches_idempotency_key_is_unique_per_stream(engine: Async
 async def test_ingest_batches_status_can_only_be_committed(engine: AsyncEngine) -> None:
     async with engine.begin() as conn:
         s = (
-            await conn.execute(text("INSERT INTO streams (service, source_id) VALUES ('s', 'x') RETURNING id"))
+            await conn.execute(
+                text("INSERT INTO streams (service, source_id) VALUES ('s', 'x') RETURNING id")
+            )
         ).scalar_one()
     with pytest.raises(IntegrityError):
         async with engine.begin() as conn:
@@ -231,7 +249,9 @@ async def test_event_ids_increase_and_support_replay(engine: AsyncEngine) -> Non
     for n in range(4):
         async with engine.begin() as conn:
             result = await conn.execute(
-                text("INSERT INTO events (type, payload) VALUES ('t', CAST(:p AS jsonb)) RETURNING id"),
+                text(
+                    "INSERT INTO events (type, payload) VALUES ('t', CAST(:p AS jsonb)) RETURNING id"
+                ),
                 {"p": f'{{"n": {n}}}'},
             )
             ids.append(result.scalar_one())

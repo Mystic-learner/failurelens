@@ -7,7 +7,9 @@ from shipper.spool import Spool
 
 
 def batch(seq: int, data: bytes = b"line\n") -> Batch:
-    return Batch(seq, f"key{seq}", data, "1:2", 0, seq * 10, seq * 10 + len(data), data.count(b"\n"))
+    return Batch(
+        seq, f"key{seq}", data, "1:2", 0, seq * 10, seq * 10 + len(data), data.count(b"\n")
+    )
 
 
 def make(tmp_path: Path, **kwargs: int) -> Spool:

@@ -75,7 +75,9 @@ async def test_shutdown_cuts_and_delivers_lines_that_were_still_buffered(tmp_pat
 
 
 @pytest.mark.asyncio
-async def test_undeliverable_batches_stay_in_the_spool_after_the_drain_timeout(tmp_path: Path) -> None:
+async def test_undeliverable_batches_stay_in_the_spool_after_the_drain_timeout(
+    tmp_path: Path,
+) -> None:
     (tmp_path / "app.log").write_bytes(b"a\n")
     reader, spool, forwarder, client = parts(tmp_path)
 
@@ -115,7 +117,9 @@ async def test_pump_appends_lines_and_adds_missing_newlines(tmp_path: Path) -> N
 
 
 def test_resolve_file_mode_defaults(tmp_path: Path) -> None:
-    args = build_parser().parse_args(["--file", str(tmp_path / "web.log"), "--state-dir", str(tmp_path / "s")])
+    args = build_parser().parse_args(
+        ["--file", str(tmp_path / "web.log"), "--state-dir", str(tmp_path / "s")]
+    )
     service, source_id, state_dir, tail_from = resolve(args)
     assert service == "web"
     assert source_id == str((tmp_path / "web.log").resolve())
@@ -126,7 +130,9 @@ def test_resolve_file_mode_defaults(tmp_path: Path) -> None:
 def test_resolve_stdin_and_docker_use_a_feed_file(tmp_path: Path) -> None:
     a = build_parser().parse_args(["--stdin", "--state-dir", str(tmp_path)])
     assert resolve(a)[0::3] == ("stdin", tmp_path / "feed.log")
-    d = build_parser().parse_args(["--docker", "api", "--service", "shop", "--state-dir", str(tmp_path)])
+    d = build_parser().parse_args(
+        ["--docker", "api", "--service", "shop", "--state-dir", str(tmp_path)]
+    )
     service, source_id, _, tail_from = resolve(d)
     assert (service, source_id, tail_from) == ("shop", "docker:api", tmp_path / "feed.log")
 

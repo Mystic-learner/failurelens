@@ -44,8 +44,18 @@ def test_parse_retry_after() -> None:
 
 @pytest.mark.parametrize(
     ("status", "retryable"),
-    [(429, True), (503, True), (500, True), (408, True), (400, False), (401, False),
-     (404, False), (413, False), (422, False), (202, False)],
+    [
+        (429, True),
+        (503, True),
+        (500, True),
+        (408, True),
+        (400, False),
+        (401, False),
+        (404, False),
+        (413, False),
+        (422, False),
+        (202, False),
+    ],
 )
 def test_retryable_statuses(status: int, retryable: bool) -> None:
     assert is_retryable_status(status) is retryable

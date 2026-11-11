@@ -29,8 +29,11 @@ async def test_fake_is_deterministic_normalised_and_the_right_size() -> None:
 async def test_fake_similar_text_is_closer_than_different_text() -> None:
     p = FakeEmbeddingProvider()
     base, similar, other = await p.embed(
-        ["connection reset by peer ECONNRESET upstream", "upstream ECONNRESET connection reset",
-         "disk full no space left on device"]
+        [
+            "connection reset by peer ECONNRESET upstream",
+            "upstream ECONNRESET connection reset",
+            "disk full no space left on device",
+        ]
     )
     assert dot(base, similar) > dot(base, other)
 
@@ -147,7 +150,9 @@ async def test_openai_network_error_is_transient() -> None:
         httpx.Response(200, json={"data": []}),
     ],
 )
-async def test_openai_malformed_or_wrong_size_responses_are_errors(response: httpx.Response) -> None:
+async def test_openai_malformed_or_wrong_size_responses_are_errors(
+    response: httpx.Response,
+) -> None:
     with pytest.raises(EmbeddingError):
         await openai(lambda request: response).embed(["x"])
 

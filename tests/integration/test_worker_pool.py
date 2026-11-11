@@ -169,6 +169,7 @@ async def test_50_concurrent_http_batches_end_to_end(
         stream_idle_s=60,
     )
     async with running_client(settings) as client:
+
         async def send(i: int) -> httpx.Response:
             return await client.post(
                 "/ingest/stream",

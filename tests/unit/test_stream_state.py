@@ -45,6 +45,7 @@ def test_ip_placeholders_survive_a_restart() -> None:
         "2024-01-01 10:00:01 INFO from <IP_2> and <IP_1>",
     ]
 
+
 def test_empty_state_is_a_fresh_processor() -> None:
     p = StreamProcessor("s")
     p.import_state({})

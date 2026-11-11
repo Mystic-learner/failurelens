@@ -7,9 +7,29 @@ from app.services.redaction import Redactor
 
 ALNUM = string.ascii_letters + string.digits
 FRAGMENTS = [
-    "password=", "token: ", "Bearer ", "sk-", "AKIA", "ghp_", "eyJ", "@", ".", ":",
-    "::", "10.0.0.1", "4111111111111111", "\n", " ", "<IP_1>", "<SECRET>", '"', "'",
-    "abc", "123", "secret=", "api_key=",
+    "password=",
+    "token: ",
+    "Bearer ",
+    "sk-",
+    "AKIA",
+    "ghp_",
+    "eyJ",
+    "@",
+    ".",
+    ":",
+    "::",
+    "10.0.0.1",
+    "4111111111111111",
+    "\n",
+    " ",
+    "<IP_1>",
+    "<SECRET>",
+    '"',
+    "'",
+    "abc",
+    "123",
+    "secret=",
+    "api_key=",
 ]
 noisy_text = st.lists(st.sampled_from(FRAGMENTS) | st.text(max_size=8), max_size=25).map("".join)
 

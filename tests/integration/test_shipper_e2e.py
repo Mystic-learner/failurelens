@@ -112,8 +112,11 @@ async def test_a_batch_sent_twice_by_the_shipper_is_stored_once(
     # Simulate "the shipper never learned about the commit": put the same batch back.
     spool = Spool(tmp_path / "spool", fsync=False)
     reader = LogReader(
-        log, "src", StateStore(tmp_path / "other" / "state.json", fsync=False),
-        max_lines=50, max_wait_s=0.0,
+        log,
+        "src",
+        StateStore(tmp_path / "other" / "state.json", fsync=False),
+        max_lines=50,
+        max_wait_s=0.0,
     )
     batch = reader.next_batch(force=True)
     assert batch is not None

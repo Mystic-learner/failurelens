@@ -63,7 +63,9 @@ async def test_idle_when_the_spool_is_empty(tmp_path: Path) -> None:
 
 
 @pytest.mark.asyncio
-async def test_sends_in_order_and_keeps_batches_until_their_key_is_committed(tmp_path: Path) -> None:
+async def test_sends_in_order_and_keeps_batches_until_their_key_is_committed(
+    tmp_path: Path,
+) -> None:
     forwarder, client, spool, _ = make(tmp_path, 3, poll_s=0.2)
     assert await forwarder.step() == 0.2
     assert client.sent == [1, 2, 3]

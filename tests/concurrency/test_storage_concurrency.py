@@ -33,7 +33,10 @@ async def test_50_concurrent_batches_on_one_stream(engine: AsyncEngine) -> None:
     assert await count(engine, "signatures") == 1
     assert await fetch_value(engine, "SELECT count FROM signatures") == 1000
     assert await fetch_value(engine, "SELECT committed_seq FROM streams") == 50
-    assert await fetch_value(engine, "SELECT CAST(sum(count) AS bigint) FROM signature_buckets") == 1000
+    assert (
+        await fetch_value(engine, "SELECT CAST(sum(count) AS bigint) FROM signature_buckets")
+        == 1000
+    )
 
 
 async def test_same_batch_sent_20_times_at_once_is_applied_once(engine: AsyncEngine) -> None:
@@ -72,4 +75,7 @@ async def test_10000_identical_failures_make_one_signature(engine: AsyncEngine) 
     assert await count(engine, "signatures") == 1
     assert await fetch_value(engine, "SELECT count FROM signatures") == 10_000
     assert await count(engine, "chunks") == 10_000
-    assert await fetch_value(engine, "SELECT CAST(sum(count) AS bigint) FROM signature_buckets") == 10_000
+    assert (
+        await fetch_value(engine, "SELECT CAST(sum(count) AS bigint) FROM signature_buckets")
+        == 10_000
+    )

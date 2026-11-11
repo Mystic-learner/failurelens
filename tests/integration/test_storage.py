@@ -134,9 +134,7 @@ async def test_signature_keeps_first_exemplar_and_widens_time_range(
     engine: AsyncEngine,
 ) -> None:
     sid = await setup_stream(engine)
-    await commit(
-        engine, sid, "k1", 1, make_chunks("2024-01-01 10:00:00 ERROR payment 1 failed\n")
-    )
+    await commit(engine, sid, "k1", 1, make_chunks("2024-01-01 10:00:00 ERROR payment 1 failed\n"))
     second = await commit(
         engine, sid, "k2", 2, make_chunks("2024-01-01 10:05:00 ERROR payment 2 failed\n")
     )

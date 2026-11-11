@@ -94,9 +94,7 @@ async def test_10000_identical_errors_make_one_signature_and_one_incident(
 
 async def _baseline(engine: AsyncEngine) -> None:
     """60 errors, one per minute from 09:00 to 09:59, stored without running the detector."""
-    raw = "".join(
-        f"2024-01-01 09:{m:02d}:00 ERROR payment {m} failed\n" for m in range(60)
-    )
+    raw = "".join(f"2024-01-01 09:{m:02d}:00 ERROR payment {m} failed\n" for m in range(60))
     await process_item(engine, item(raw, 1, "base"), now=NOW, detector=None)
 
 

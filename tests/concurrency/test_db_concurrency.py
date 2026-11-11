@@ -60,7 +60,9 @@ async def test_100_parallel_upserts_give_an_exact_signature_count(engine: AsyncE
 
     await run_parallel(100, upsert)
     async with engine.connect() as conn:
-        rows = (await conn.execute(text("SELECT count, first_seen <= last_seen FROM signatures"))).all()
+        rows = (
+            await conn.execute(text("SELECT count, first_seen <= last_seen FROM signatures"))
+        ).all()
     assert len(rows) == 1
     assert tuple(rows[0]) == (100, True)
 
@@ -69,7 +71,9 @@ async def test_parallel_bucket_upserts_do_not_lose_counts(engine: AsyncEngine) -
     async with engine.begin() as conn:
         sid = (
             await conn.execute(
-                text("INSERT INTO signatures (service, fingerprint) VALUES ('api', 'b') RETURNING id")
+                text(
+                    "INSERT INTO signatures (service, fingerprint) VALUES ('api', 'b') RETURNING id"
+                )
             )
         ).scalar_one()
 

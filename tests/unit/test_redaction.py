@@ -15,9 +15,7 @@ def test_email() -> None:
 
 
 def test_api_keys() -> None:
-    out = redact(
-        "a sk-proj1234567890abcdefghij b AKIAIOSFODNN7EXAMPLE c ghp_" + "a1" * 15
-    )
+    out = redact("a sk-proj1234567890abcdefghij b AKIAIOSFODNN7EXAMPLE c ghp_" + "a1" * 15)
     assert "sk-proj" not in out
     assert "AKIAIOSFODNN7EXAMPLE" not in out
     assert "ghp_a1" not in out

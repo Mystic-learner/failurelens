@@ -107,7 +107,10 @@ async def test_committed_keys_is_none_when_unreachable_or_nonsense() -> None:
 
     assert await client_for(down).committed_keys(["a"]) is None
     assert await client_for(lambda r: httpx.Response(503)).committed_keys(["a"]) is None
-    assert await client_for(lambda r: httpx.Response(200, content=b"not json")).committed_keys(["a"]) is None
+    assert (
+        await client_for(lambda r: httpx.Response(200, content=b"not json")).committed_keys(["a"])
+        is None
+    )
     for body in ({}, {"committed": "a"}, {"committed": [1]}, {"committed": None}, [1]):
         got = await client_for(lambda r, b=body: httpx.Response(200, json=b)).committed_keys(["a"])
         assert got is None

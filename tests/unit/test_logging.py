@@ -10,7 +10,9 @@ from app.core.logging import JsonFormatter, configure_logging
 from app.core.request_id import request_id_var
 
 
-def make_record(message: str = "hello %s", args: tuple[object, ...] = ("world",)) -> logging.LogRecord:
+def make_record(
+    message: str = "hello %s", args: tuple[object, ...] = ("world",)
+) -> logging.LogRecord:
     return logging.LogRecord("t", logging.INFO, __file__, 1, message, args, None)
 
 

@@ -112,11 +112,7 @@ def test_secrets_never_reach_chunks() -> None:
 
 
 def test_secret_split_across_two_lines_is_redacted() -> None:
-    raw = (
-        "2024-01-01 10:00:00 INFO key sk-abcdefgh\n"
-        "ijklmnopqrstu\n"
-        "2024-01-01 10:00:01 INFO next\n"
-    )
+    raw = "2024-01-01 10:00:00 INFO key sk-abcdefgh\nijklmnopqrstu\n2024-01-01 10:00:01 INFO next\n"
     text = all_text(run(make(), raw))
     assert "abcdefgh" not in text
     assert "ijklmnopqrstu" not in text
@@ -136,9 +132,7 @@ def test_ip_placeholders_are_stable_across_batches() -> None:
 
 def test_replayed_batch_gives_the_same_hashes() -> None:
     batch = (
-        "2024-01-01 10:00:00 INFO a\n"
-        "2024-01-01 10:00:01 ERROR b 7\n"
-        "2024-01-01 10:00:02 INFO c\n"
+        "2024-01-01 10:00:00 INFO a\n2024-01-01 10:00:01 ERROR b 7\n2024-01-01 10:00:02 INFO c\n"
     )
     p = make()
     first = [c.chunk.chunk_hash for c in run(p, batch)]

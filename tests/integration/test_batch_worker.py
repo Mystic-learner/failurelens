@@ -19,10 +19,7 @@ PART_1 = (
     '  File "/app/a.py", line 10, in handler\n'
 )
 PART_2 = "    do()\nValueError: bad 5\n2024-01-01 10:00:01 INFO next\n"
-ERR_THEN_INFO = (
-    "2024-01-01 10:00:00 ERROR payment 1 failed\n"
-    "2024-01-01 10:00:05 INFO ok\n"
-)
+ERR_THEN_INFO = "2024-01-01 10:00:00 ERROR payment 1 failed\n2024-01-01 10:00:05 INFO ok\n"
 
 
 def item(

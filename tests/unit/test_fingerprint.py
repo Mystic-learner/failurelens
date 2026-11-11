@@ -124,7 +124,15 @@ def test_empty_input() -> None:
 
 @pytest.mark.parametrize(
     "text",
-    ["a." * 8000, "1." * 8000, "a1" * 8000, "ab" * 8000, "0x" * 8000, "Error" * 3000, "<IP_1>" * 2500],
+    [
+        "a." * 8000,
+        "1." * 8000,
+        "a1" * 8000,
+        "ab" * 8000,
+        "0x" * 8000,
+        "Error" * 3000,
+        "<IP_1>" * 2500,
+    ],
 )
 def test_pathological_inputs_are_fast(text: str) -> None:
     start = time.perf_counter()

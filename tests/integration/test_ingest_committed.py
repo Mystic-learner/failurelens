@@ -11,14 +11,18 @@ URL = "/ingest/committed"
 
 
 def item(seq: int, key: str, service: str = "svc", source: str = "src") -> IngestItem:
-    return IngestItem(service, source, key, seq, f"2024-01-01 10:00:0{seq} ERROR boom {seq}\n".encode())
+    return IngestItem(
+        service, source, key, seq, f"2024-01-01 10:00:0{seq} ERROR boom {seq}\n".encode()
+    )
 
 
 def body(keys: list[str], service: str = "svc", source: str = "src") -> dict[str, object]:
     return {"service": service, "source_id": source, "keys": keys}
 
 
-async def test_only_committed_keys_are_reported(client: httpx.AsyncClient, engine: AsyncEngine) -> None:
+async def test_only_committed_keys_are_reported(
+    client: httpx.AsyncClient, engine: AsyncEngine
+) -> None:
     await process_item(engine, item(1, "k1"))
     await process_item(engine, item(3, "k3"))  # seq 2 never committed
     resp = await client.post(URL, json=body(["k1", "k2", "k3"]))
@@ -39,8 +43,12 @@ async def test_unknown_stream_is_empty_not_an_error(client: httpx.AsyncClient) -
 
 @pytest.mark.parametrize(
     "payload",
-    [{}, {"service": "s", "source_id": "x", "keys": []}, {"service": "s", "source_id": "x", "keys": [""]},
-     {"service": "s", "source_id": "x", "keys": ["k"] * 1001}],
+    [
+        {},
+        {"service": "s", "source_id": "x", "keys": []},
+        {"service": "s", "source_id": "x", "keys": [""]},
+        {"service": "s", "source_id": "x", "keys": ["k"] * 1001},
+    ],
 )
 async def test_bad_requests_are_422(client: httpx.AsyncClient, payload: dict[str, object]) -> None:
     resp = await client.post(URL, json=payload)

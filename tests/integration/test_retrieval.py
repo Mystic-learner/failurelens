@@ -90,7 +90,9 @@ async def test_same_failure_with_different_ids_gets_the_fingerprint_boost(
     engine: AsyncEngine,
 ) -> None:
     await load(engine, "2024-01-01 10:00:00 ERROR payment 123 failed for user 77\n")
-    result = await search(engine, PROVIDER, "2025-05-05 09:09:09 ERROR payment 98765 failed for user 4")
+    result = await search(
+        engine, PROVIDER, "2025-05-05 09:09:09 ERROR payment 98765 failed for user 4"
+    )
     assert result.hits[0].fingerprint_match is True
 
 
@@ -112,7 +114,11 @@ async def test_one_word_query(engine: AsyncEngine) -> None:
 @pytest.mark.asyncio
 async def test_query_in_another_language_does_not_crash(engine: AsyncEngine) -> None:
     await load(engine, DB_DOWN)
-    result = await search(engine, PROVIDER, "\u30c7\u30fc\u30bf\u30d9\u30fc\u30b9\u63a5\u7d9a\u30a8\u30e9\u30fc \u9519\u8bef")
+    result = await search(
+        engine,
+        PROVIDER,
+        "\u30c7\u30fc\u30bf\u30d9\u30fc\u30b9\u63a5\u7d9a\u30a8\u30e9\u30fc \u9519\u8bef",
+    )
     assert isinstance(result.inconclusive, bool)
     mixed = await search(engine, PROVIDER, "\u9519\u8bef ECONNRESET")
     assert not mixed.inconclusive  # the exact code still matches

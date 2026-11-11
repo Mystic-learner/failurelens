@@ -12,9 +12,7 @@ from tests.storagetools import commit, count, fetch_value, make_chunks, setup_st
 
 pytestmark = pytest.mark.asyncio
 
-RAW = "".join(
-    f"2024-01-01 10:00:{i:02d} ERROR payment {i} failed ECONNRESET\n" for i in range(5)
-)
+RAW = "".join(f"2024-01-01 10:00:{i:02d} ERROR payment {i} failed ECONNRESET\n" for i in range(5))
 
 
 async def store(engine: AsyncEngine) -> None:
@@ -54,7 +52,12 @@ async def test_embeds_every_chunk_once_and_is_idempotent(engine: AsyncEngine) ->
     assert await embed_pending(engine, p) == 5
     assert await embed_pending(engine, p) == 0
     assert await count(engine, "chunk_embeddings_local") == 5
-    assert await fetch_value(engine, "SELECT vector_dims(embedding) FROM chunk_embeddings_local LIMIT 1") == 384
+    assert (
+        await fetch_value(
+            engine, "SELECT vector_dims(embedding) FROM chunk_embeddings_local LIMIT 1"
+        )
+        == 384
+    )
 
 
 async def test_batch_size_limits_each_call(engine: AsyncEngine) -> None:
@@ -97,7 +100,9 @@ async def test_worker_embeds_in_the_background_and_recovers_from_failures(
     engine: AsyncEngine,
 ) -> None:
     await store(engine)
-    worker = EmbeddingWorker(engine, Flaky(failures=2), interval_s=0.01, batch_size=64, max_backoff_s=0.05)
+    worker = EmbeddingWorker(
+        engine, Flaky(failures=2), interval_s=0.01, batch_size=64, max_backoff_s=0.05
+    )
     worker.start()
     deadline = asyncio.get_running_loop().time() + 10
     while worker.embedded < 5:
