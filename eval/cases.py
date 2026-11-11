@@ -5,6 +5,11 @@ substrings that must appear in the text of a retrieved chunk for it to count as 
 Patterns are matched against redacted chunk text, so they must not contain anything the
 redactor rewrites (IP addresses, emails, tokens).
 
+Scoring:
+- "full": retrieval, root cause, evidence validity (needs expected_root_cause).
+- "retrieval": hit-rate only. Used where no trustworthy root-cause label exists (Loghub).
+- inconclusive cases are scored on abstention and always use "full".
+
 Run `python eval/cases.py eval/fixtures/cases.jsonl` to validate a case file.
 """
 
@@ -20,6 +25,9 @@ from typing import Literal, Self
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 Source = Literal["loghub-hdfs", "loghub-openstack", "replayed", "inconclusive"]
+Scoring = Literal["retrieval", "full"]
+
+LABELLESS_SOURCES = frozenset({"loghub-hdfs", "loghub-openstack"})
 
 _ID = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 MIN_PATTERN_CHARS = 6  # shorter patterns match almost any chunk and inflate hit-rate
@@ -36,6 +44,7 @@ class EvalCase(BaseModel):
     source: Source
     file: str | None = None  # path relative to eval/fixtures
     query: str = Field(min_length=1, max_length=4000)
+    scoring: Scoring = "full"
     expected_root_cause: str | None = None
     evidence_patterns: list[str] = Field(default_factory=list)
     expect_inconclusive: bool = False
@@ -82,13 +91,22 @@ class EvalCase(BaseModel):
                 raise ValueError("inconclusive cases must not set expected_root_cause")
             if self.evidence_patterns:
                 raise ValueError("inconclusive cases must not set evidence_patterns")
+            if self.scoring != "full":
+                raise ValueError(
+                    "inconclusive cases are scored on abstention: scoring must be 'full'"
+                )
             return self
-        if not (self.expected_root_cause or "").strip():
-            raise ValueError("answerable cases need expected_root_cause")
+        if self.source in LABELLESS_SOURCES and self.scoring != "retrieval":
+            raise ValueError(f"{self.source} has no root-cause labels: scoring must be 'retrieval'")
         if not self.evidence_patterns:
             raise ValueError("answerable cases need at least one evidence pattern")
         if self.file is None:
             raise ValueError("answerable cases need a file")
+        if self.scoring == "retrieval":
+            if self.expected_root_cause is not None:
+                raise ValueError("retrieval cases must not set expected_root_cause")
+        elif not (self.expected_root_cause or "").strip():
+            raise ValueError("full cases need expected_root_cause")
         return self
 
 
@@ -160,8 +178,12 @@ def main(argv: list[str]) -> int:
     problems = check_fixtures(cases, path.parent)
     for problem in problems:
         print(problem)
-    answerable = sum(1 for c in cases if not c.expect_inconclusive)
-    print(f"{len(cases)} cases ({answerable} answerable, {len(cases) - answerable} inconclusive)")
+    inconclusive = sum(1 for c in cases if c.expect_inconclusive)
+    retrieval = sum(1 for c in cases if c.scoring == "retrieval")
+    full = len(cases) - inconclusive - retrieval
+    print(
+        f"{len(cases)} cases ({full} full, {retrieval} retrieval-only, {inconclusive} inconclusive)"
+    )
     return 1 if problems else 0
 
 
