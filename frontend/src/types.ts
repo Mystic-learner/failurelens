@@ -93,3 +93,35 @@ export interface ServerEvent {
   payload: Record<string, unknown>;
   created_at: string;
 }
+
+export interface LatencySnapshot {
+  count: number;
+  p50_s: number | null;
+  p95_s: number | null;
+}
+
+export interface Metrics {
+  queue: { depth: number; max_size: number };
+  ingest: {
+    lines_per_s_1m: number;
+    batches_committed_1h: number;
+    worker_processed: number;
+    worker_failed: number;
+    queue_to_commit: LatencySnapshot;
+  };
+  diagnosis: {
+    p50_s: number | null;
+    p95_s: number | null;
+    diagnosed_24h: number;
+    inconclusive_rate: number | null;
+  };
+  incidents: { open: number; diagnosing: number; deferred: number };
+  llm: { tokens_used_this_hour: number; hourly_cap: number };
+}
+
+export interface HealthInfo {
+  status: "ok" | "degraded" | "unavailable";
+  database: { ok: boolean; latency_ms: number | null };
+  queue: { depth: number; max_size: number };
+  embedding: { provider: string; configured: boolean };
+}

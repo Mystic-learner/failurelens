@@ -1,4 +1,12 @@
-import type { Chunk, DiagnoseResponse, Incident, IncidentsPage, Signature } from "./types";
+import type {
+  Chunk,
+  DiagnoseResponse,
+  HealthInfo,
+  Incident,
+  IncidentsPage,
+  Metrics,
+  Signature,
+} from "./types";
 
 export const BASE: string = import.meta.env.VITE_API_BASE ?? "/api";
 
@@ -107,4 +115,29 @@ export function listSignatures(opts: {
 
 export function getChunk(id: number | string): Promise<Chunk> {
   return request<Chunk>(`/chunks/${encodeURIComponent(String(id))}`);
+}
+
+export function getMetrics(): Promise<Metrics> {
+  return request<Metrics>("/metrics");
+}
+
+/** /health answers 503 with a valid body when the database is down, so the body is read either way. */
+export async function getHealth(): Promise<HealthInfo> {
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/health`);
+  } catch {
+    throw new ApiError("Cannot reach the server", 0, null);
+  }
+  let body: unknown = null;
+  try {
+    body = await res.json();
+  } catch {
+    body = null;
+  }
+  const b = body as Partial<HealthInfo> | null;
+  if (b && typeof b.status === "string" && b.database && b.queue && b.embedding) {
+    return b as HealthInfo;
+  }
+  throw new ApiError(extractMessage(body, `Request failed (${res.status})`), res.status, null);
 }

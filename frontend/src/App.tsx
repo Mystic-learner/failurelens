@@ -1,6 +1,7 @@
 import { NavLink, Route, Routes } from "react-router-dom";
 import { useEventsStatus } from "./events";
 import DiagnosePage from "./pages/DiagnosePage";
+import HealthPage from "./pages/HealthPage";
 import IncidentDetailPage from "./pages/IncidentDetailPage";
 import IncidentsPage from "./pages/IncidentsPage";
 import SignaturesPage from "./pages/SignaturesPage";
@@ -33,6 +34,9 @@ export default function App() {
           <NavLink to="/signatures" className={nav}>
             Signatures
           </NavLink>
+          <NavLink to="/health" className={nav}>
+            Health
+          </NavLink>
         </nav>
         <span className="ml-auto flex items-center gap-2 text-xs text-slate-400" title="Live event connection">
           <span className={`h-2 w-2 rounded-full ${DOT[status] ?? "bg-slate-500"}`} />
@@ -45,6 +49,7 @@ export default function App() {
           <Route path="/incidents" element={<IncidentsPage />} />
           <Route path="/incidents/:id" element={<IncidentDetailPage />} />
           <Route path="/signatures" element={<SignaturesPage />} />
+          <Route path="/health" element={<HealthPage />} />
           <Route path="*" element={<p className="py-8 text-slate-400">Page not found.</p>} />
         </Routes>
       </main>
