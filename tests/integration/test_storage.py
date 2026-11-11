@@ -16,7 +16,7 @@ from tests.storagetools import (
     setup_stream,
 )
 
-pytestmark = pytest.mark.asyncio
+pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 
 ERRORS = (
     "2024-01-01 10:00:00 ERROR payment 1 failed for user 11\n"

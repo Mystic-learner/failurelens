@@ -54,7 +54,7 @@ def test_query_tokens_are_deduplicated_lowercase_and_capped() -> None:
 
 
 # ---------------------------------------------------------------- real database
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_cold_start_empty_database_is_inconclusive(engine: AsyncEngine) -> None:
     result = await search(engine, PROVIDER, "connection reset ECONNRESET")
     assert result.inconclusive is True
@@ -62,14 +62,14 @@ async def test_cold_start_empty_database_is_inconclusive(engine: AsyncEngine) ->
     assert result.degraded is False
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_empty_and_whitespace_queries_are_inconclusive(engine: AsyncEngine) -> None:
     await load(engine, DB_DOWN)
     for q in ("", "   \n\t "):
         assert (await search(engine, PROVIDER, q)).inconclusive is True
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_exact_error_code_finds_the_right_chunk(engine: AsyncEngine) -> None:
     await load(engine, DB_DOWN + DISK + HTTP503 + OK_LINE)
     result = await search(engine, PROVIDER, "Error: read ECONNRESET")
@@ -78,14 +78,14 @@ async def test_exact_error_code_finds_the_right_chunk(engine: AsyncEngine) -> No
     assert "error_code" in result.hits[0].sources
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_http_status_code_is_matched(engine: AsyncEngine) -> None:
     await load(engine, DB_DOWN + HTTP503)
     result = await search(engine, PROVIDER, "got HTTP/1.1 503 from upstream")
     assert "HTTP/1.1 503" in result.hits[0].text
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_same_failure_with_different_ids_gets_the_fingerprint_boost(
     engine: AsyncEngine,
 ) -> None:
@@ -96,7 +96,7 @@ async def test_same_failure_with_different_ids_gets_the_fingerprint_boost(
     assert result.hits[0].fingerprint_match is True
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_unrelated_query_is_inconclusive_not_a_bluff(engine: AsyncEngine) -> None:
     await load(engine, DB_DOWN + DISK)
     result = await search(engine, PROVIDER, "zzzqqq xylophone quantum banana", min_similarity=0.9)
@@ -104,14 +104,14 @@ async def test_unrelated_query_is_inconclusive_not_a_bluff(engine: AsyncEngine) 
     assert result.hits == []
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_one_word_query(engine: AsyncEngine) -> None:
     await load(engine, DB_DOWN + DISK)
     result = await search(engine, PROVIDER, "ENOSPC")
     assert "ENOSPC" in result.hits[0].text
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_query_in_another_language_does_not_crash(engine: AsyncEngine) -> None:
     await load(engine, DB_DOWN)
     result = await search(
@@ -124,7 +124,7 @@ async def test_query_in_another_language_does_not_crash(engine: AsyncEngine) -> 
     assert not mixed.inconclusive  # the exact code still matches
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_same_error_in_two_services_and_the_service_filter(engine: AsyncEngine) -> None:
     await load(engine, DB_DOWN, service="alpha", n=1)
     await load(engine, DB_DOWN, service="beta", n=2)
@@ -134,7 +134,7 @@ async def test_same_error_in_two_services_and_the_service_filter(engine: AsyncEn
     assert {h.service for h in only.hits} == {"beta"}
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_time_range_filter(engine: AsyncEngine) -> None:
     raw = (
         "2024-01-01 10:00:00 ERROR connect ECONNRESET early\n"
@@ -146,7 +146,7 @@ async def test_time_range_filter(engine: AsyncEngine) -> None:
     assert [("late" in h.text) for h in result.hits] == [True]
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_two_unrelated_errors_in_one_chunk_are_both_findable(engine: AsyncEngine) -> None:
     await load(engine, "just text ECONNRESET and then ENOSPC on the same record\n")
     for code in ("ECONNRESET", "ENOSPC"):
@@ -154,7 +154,7 @@ async def test_two_unrelated_errors_in_one_chunk_are_both_findable(engine: Async
         assert len(result.hits) == 1
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_embedding_failure_falls_back_to_keywords_and_marks_degraded(
     engine: AsyncEngine,
 ) -> None:
@@ -166,7 +166,7 @@ async def test_embedding_failure_falls_back_to_keywords_and_marks_degraded(
     assert "vector" not in result.hits[0].sources
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_no_provider_is_degraded_keyword_only(engine: AsyncEngine) -> None:
     await load(engine, DB_DOWN)
     result = await search(engine, None, "ECONNRESET")
@@ -174,7 +174,7 @@ async def test_no_provider_is_degraded_keyword_only(engine: AsyncEngine) -> None
     assert result.hits
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_hostile_query_text_is_safe(engine: AsyncEngine) -> None:
     await load(engine, DB_DOWN)
     nasty = "'; DROP TABLE chunks; -- \\ ' | & ! ( ) : * <-> \x00 \u0000 ECONNRESET"
@@ -184,7 +184,7 @@ async def test_hostile_query_text_is_safe(engine: AsyncEngine) -> None:
     assert again.hits
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_secrets_in_the_query_are_redacted_before_use(engine: AsyncEngine) -> None:
     await load(engine, DB_DOWN)
     result = await search(engine, PROVIDER, "login failed password=hunter2 ECONNRESET")
@@ -192,7 +192,7 @@ async def test_secrets_in_the_query_are_redacted_before_use(engine: AsyncEngine)
     assert "<SECRET>" in result.query
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_top_k_limits_results(engine: AsyncEngine) -> None:
     raw = "".join(f"2024-01-01 10:00:{i:02d} ERROR connect ECONNRESET host{i}\n" for i in range(10))
     await load(engine, raw)
@@ -200,7 +200,7 @@ async def test_top_k_limits_results(engine: AsyncEngine) -> None:
 
 
 # ---------------------------------------------------------------- HTTP endpoint
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_search_endpoint(client: httpx.AsyncClient, engine: AsyncEngine) -> None:
     await load(engine, DB_DOWN)
     client.app.state.embedding_provider = PROVIDER  # type: ignore[attr-defined]
@@ -211,7 +211,7 @@ async def test_search_endpoint(client: httpx.AsyncClient, engine: AsyncEngine) -
     assert "ECONNRESET" in body["hits"][0]["text"]
 
 
-@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_search_endpoint_validation_and_cold_start(client: httpx.AsyncClient) -> None:
     assert (await client.post("/search", json={"query": ""})).status_code == 422
     assert (await client.post("/search", json={"query": "x", "top_k": 0})).status_code == 422

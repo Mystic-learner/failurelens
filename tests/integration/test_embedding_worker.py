@@ -10,7 +10,7 @@ from app.services.embedding_worker import EmbeddingWorker, embed_pending
 from app.services.embeddings import EmbeddingError, FakeEmbeddingProvider
 from tests.storagetools import commit, count, fetch_value, make_chunks, setup_stream
 
-pytestmark = pytest.mark.asyncio
+pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 
 RAW = "".join(f"2024-01-01 10:00:{i:02d} ERROR payment {i} failed ECONNRESET\n" for i in range(5))
 

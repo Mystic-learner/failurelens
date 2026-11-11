@@ -13,8 +13,6 @@ from app.services.ingest_queue import IngestItem
 from app.services.worker_pool import flush_idle
 from tests.storagetools import count, fetch_all, fetch_value
 
-pytestmark = pytest.mark.asyncio
-
 NOW = datetime(2024, 1, 1, 10, 0, 10, tzinfo=UTC)
 ERR_THEN_INFO = "2024-01-01 10:00:00 ERROR payment 1 failed\n2024-01-01 10:00:05 INFO ok\n"
 
@@ -30,6 +28,7 @@ def errors(hour: int, minute: int, n: int, start: int = 0) -> str:
     )
 
 
+@pytest.mark.integration
 async def test_new_error_signature_opens_one_incident_and_one_event(engine: AsyncEngine) -> None:
     out = await process_item(engine, item(ERR_THEN_INFO, 1, "k1"), now=NOW)
     assert len(out.incidents) == 1
@@ -40,6 +39,7 @@ async def test_new_error_signature_opens_one_incident_and_one_event(engine: Asyn
     assert await fetch_value(engine, "SELECT payload->>'trigger' FROM events") == "new_signature"
 
 
+@pytest.mark.integration
 async def test_the_same_error_again_does_not_open_a_second_incident(engine: AsyncEngine) -> None:
     await process_item(engine, item(ERR_THEN_INFO, 1, "k1"), now=NOW)
     again = "2024-01-01 10:01:00 ERROR payment 2 failed\n2024-01-01 10:01:05 INFO ok\n"
@@ -48,6 +48,7 @@ async def test_the_same_error_again_does_not_open_a_second_incident(engine: Asyn
     assert await count(engine, "incidents") == 1
 
 
+@pytest.mark.integration
 async def test_info_only_input_opens_nothing(engine: AsyncEngine) -> None:
     raw = "2024-01-01 10:00:00 INFO a\n2024-01-01 10:00:01 INFO b\n2024-01-01 10:00:02 INFO c\n"
     out = await process_item(engine, item(raw, 1, "k1"), now=NOW)
@@ -56,6 +57,7 @@ async def test_info_only_input_opens_nothing(engine: AsyncEngine) -> None:
     assert await count(engine, "events") == 0
 
 
+@pytest.mark.integration
 async def test_a_lone_pending_error_opens_its_incident_on_idle_flush(engine: AsyncEngine) -> None:
     out = await process_item(engine, item("2024-01-01 10:00:00 ERROR boom 1\n", 1, "k1"), now=NOW)
     assert out.incidents == ()  # the newest record is still pending
@@ -64,6 +66,7 @@ async def test_a_lone_pending_error_opens_its_incident_on_idle_flush(engine: Asy
     assert await count(engine, "events") == 1
 
 
+@pytest.mark.integration
 async def test_same_error_in_two_services_is_two_incidents(engine: AsyncEngine) -> None:
     await process_item(engine, item(ERR_THEN_INFO, 1, "k1", "alpha", "a"), now=NOW)
     await process_item(engine, item(ERR_THEN_INFO, 1, "k1", "beta", "b"), now=NOW)
@@ -71,6 +74,7 @@ async def test_same_error_in_two_services_is_two_incidents(engine: AsyncEngine) 
     assert await fetch_value(engine, "SELECT count(DISTINCT signature_id) FROM incidents") == 2
 
 
+@pytest.mark.integration
 async def test_10000_identical_errors_make_one_signature_and_one_incident(
     engine: AsyncEngine,
 ) -> None:
@@ -98,6 +102,7 @@ async def _baseline(engine: AsyncEngine) -> None:
     await process_item(engine, item(raw, 1, "base"), now=NOW, detector=None)
 
 
+@pytest.mark.integration
 async def test_rate_spike_above_baseline_opens_an_incident(engine: AsyncEngine) -> None:
     await _baseline(engine)
     burst = "".join(errors(10, m, 14, start=1000 * m) for m in (3, 4, 5))
@@ -107,6 +112,7 @@ async def test_rate_spike_above_baseline_opens_an_incident(engine: AsyncEngine) 
     assert await fetch_value(engine, "SELECT trigger FROM incidents") == "rate_spike"
 
 
+@pytest.mark.integration
 async def test_a_small_burst_below_min_count_opens_nothing(engine: AsyncEngine) -> None:
     await _baseline(engine)
     now = datetime(2024, 1, 1, 10, 5, 30, tzinfo=UTC)
@@ -115,6 +121,7 @@ async def test_a_small_burst_below_min_count_opens_nothing(engine: AsyncEngine) 
     assert await count(engine, "incidents") == 0
 
 
+@pytest.mark.integration
 async def test_cooldown_blocks_a_repeat_until_it_expires(engine: AsyncEngine) -> None:
     cfg = DetectorConfig(min_count=1, spike_factor=0.0, cooldown_min=10)
     await process_item(engine, item(ERR_THEN_INFO, 1, "k1"), now=NOW, detector=cfg)

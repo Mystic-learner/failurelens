@@ -11,7 +11,7 @@ from app.services.batch_worker import process_item
 from app.services.ingest_queue import IngestItem
 from tests.storagetools import count, fetch_value
 
-pytestmark = pytest.mark.asyncio
+pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 
 PART_1 = (
     "2024-01-01 10:00:00 ERROR request failed\n"

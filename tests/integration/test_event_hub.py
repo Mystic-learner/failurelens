@@ -18,7 +18,7 @@ from app.core.middleware import BodyLimitMiddleware
 from app.core.request_id import RequestIdMiddleware
 from app.services.event_hub import Client, EventHub, HubFull
 
-pytestmark = pytest.mark.asyncio
+pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 
 
 async def add_event(engine: AsyncEngine, id_: int, age_s: float = 0.0) -> None:

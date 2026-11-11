@@ -12,7 +12,7 @@ from app.api.incidents import router
 from app.services.batch_worker import process_item
 from app.services.ingest_queue import IngestItem
 
-pytestmark = pytest.mark.asyncio
+pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 
 NOW = datetime(2024, 1, 1, 10, 0, 10, tzinfo=UTC)
 

@@ -14,7 +14,7 @@ from app.services.worker_pool import WorkerPool, flush_idle
 from tests.appclient import make_settings, running_client
 from tests.storagetools import count, fetch_value
 
-pytestmark = pytest.mark.asyncio
+pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 
 PART_1 = (
     "2024-01-01 10:00:00 ERROR request failed\n"

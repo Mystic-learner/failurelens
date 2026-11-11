@@ -20,7 +20,7 @@ from app.services.ingest_queue import IngestItem
 from app.services.llm_budget import hour_start
 from app.services.retrieval import Hit, SearchResult
 
-pytestmark = pytest.mark.asyncio
+pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 
 NOW = datetime(2024, 1, 1, 10, 0, 10, tzinfo=UTC)
 FIRST_LINE = "2024-01-01 10:00:00 ERROR payment exploded badly"

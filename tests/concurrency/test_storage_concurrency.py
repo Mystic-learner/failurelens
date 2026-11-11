@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from tests.storagetools import commit, count, fetch_value, make_chunks, setup_stream
 
-pytestmark = pytest.mark.asyncio
+pytestmark = [pytest.mark.integration, pytest.mark.asyncio]
 
 
 async def test_50_concurrent_batches_on_one_stream(engine: AsyncEngine) -> None:
