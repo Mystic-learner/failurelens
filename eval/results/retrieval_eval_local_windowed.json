@@ -1,0 +1,97 @@
+{
+  "run": "08b421e4",
+  "created_at": "2026-11-11T13:20:27.192638+00:00",
+  "embedding_provider": "local",
+  "publishable": true,
+  "top_k": 5,
+  "corpus_chunks": 461,
+  "summary": {
+    "cases": 6,
+    "modes": {
+      "vector": {
+        "hits": 6,
+        "cases": 6,
+        "rate": 1.0
+      },
+      "lexical": {
+        "hits": 3,
+        "cases": 6,
+        "rate": 0.5
+      },
+      "hybrid": {
+        "hits": 5,
+        "cases": 6,
+        "rate": 0.8333333333333334
+      }
+    },
+    "random_baseline": 0.12377545620726312
+  },
+  "cases": [
+    {
+      "id": "hdfs-serve-exception-a",
+      "source": "loghub-hdfs",
+      "matching_chunks": 13,
+      "baseline": 0.1338158025488173,
+      "ranks": {
+        "vector": 1,
+        "lexical": 2,
+        "hybrid": 1
+      }
+    },
+    {
+      "id": "hdfs-serve-exception-b",
+      "source": "loghub-hdfs",
+      "matching_chunks": 13,
+      "baseline": 0.1338158025488173,
+      "ranks": {
+        "vector": 1,
+        "lexical": 1,
+        "hybrid": 1
+      }
+    },
+    {
+      "id": "openstack-unknown-base-file-a",
+      "source": "loghub-openstack",
+      "matching_chunks": 23,
+      "baseline": 0.2266645790881564,
+      "ranks": {
+        "vector": 1,
+        "lexical": null,
+        "hybrid": 1
+      }
+    },
+    {
+      "id": "openstack-unknown-base-file-b",
+      "source": "loghub-openstack",
+      "matching_chunks": 23,
+      "baseline": 0.2266645790881564,
+      "ranks": {
+        "vector": 1,
+        "lexical": null,
+        "hybrid": 1
+      }
+    },
+    {
+      "id": "openstack-power-sync-a",
+      "source": "loghub-openstack",
+      "matching_chunks": 1,
+      "baseline": 0.010845986984815648,
+      "ranks": {
+        "vector": 1,
+        "lexical": 1,
+        "hybrid": 1
+      }
+    },
+    {
+      "id": "openstack-power-sync-b",
+      "source": "loghub-openstack",
+      "matching_chunks": 1,
+      "baseline": 0.010845986984815648,
+      "ranks": {
+        "vector": 1,
+        "lexical": null,
+        "hybrid": null
+      }
+    }
+  ]
+}
