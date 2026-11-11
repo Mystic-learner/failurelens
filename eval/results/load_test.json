@@ -1,0 +1,19 @@
+{
+  "run": "5361ad96",
+  "target_lines_per_s": 1000.0,
+  "achieved_lines_per_s": 1000.8,
+  "batches_planned": 600,
+  "batches_accepted": 600,
+  "batches_committed": 600,
+  "lost_batches": 0,
+  "lines_accepted": 60000,
+  "lines_committed": 60000,
+  "lines_missing": 0,
+  "accepted_but_not_searchable": 0,
+  "responses_429": 0,
+  "responses_503": 0,
+  "client_failures": 0,
+  "searchable_p50_s": 0.4059999999590218,
+  "searchable_p95_s": 0.6720000000204891,
+  "peak_app_memory_mb": 67.2
+}
