@@ -23,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from app.services.batch_worker import process_item
 from app.services.detector import DEFAULT_DETECTOR, detect
 from app.services.ingest_queue import IngestItem, IngestQueue
+from app.services.latency import LatencyWindow
 from app.services.storage import commit_batch
 from app.services.stream_processor import StreamProcessor
 
@@ -110,6 +111,7 @@ class WorkerPool:
         self._stopped = False
         self.processed = 0
         self.failed = 0
+        self.latency = LatencyWindow()
 
     def start(self) -> None:
         if self._started or self._workers == 0:
@@ -150,6 +152,7 @@ class WorkerPool:
             try:
                 await process_item(self._engine, item)
                 self.processed += 1
+                self.latency.record_since(item.received_at)
                 return
             except Exception as exc:
                 logger.warning(
