@@ -35,6 +35,8 @@ FINGERPRINT_BOOST = 0.02
 MAX_QUERY_CHARS = 4000
 MAX_TOKENS = 40
 CANDIDATES = 50
+# Vector rows fetched per wanted chunk: one chunk can have several window vectors.
+WINDOW_OVERFETCH = 8
 _WORD = re.compile(r"\w+", re.UNICODE)
 
 SOURCE_VECTOR = "vector"
@@ -129,12 +131,20 @@ async def _vector(
     if table not in ALLOWED_TABLES:
         raise ValueError(f"unknown embedding table: {table!r}")
     sql = text(
-        f"SELECT c.id, 1 - (e.embedding <=> CAST(:v AS vector)) AS sim "
+        f"WITH w AS ("
+        f"SELECT e.chunk_id, e.embedding <=> CAST(:v AS vector) AS dist "
         f"FROM {table} e JOIN chunks c ON c.id = e.chunk_id "
         f"WHERE true{_filter_sql(filters)} "
-        f"ORDER BY e.embedding <=> CAST(:v AS vector) LIMIT CAST(:n AS integer)"
+        f"ORDER BY e.embedding <=> CAST(:v AS vector) LIMIT CAST(:m AS integer)) "
+        f"SELECT chunk_id, 1 - min(dist) AS sim FROM w "
+        f"GROUP BY chunk_id ORDER BY min(dist), chunk_id LIMIT CAST(:n AS integer)"
     )
-    params = {"v": vector_literal(vec), "n": limit, **_filter_params(filters)}
+    params = {
+        "v": vector_literal(vec),
+        "m": limit * WINDOW_OVERFETCH,
+        "n": limit,
+        **_filter_params(filters),
+    }
     async with engine.connect() as conn:
         return [(int(r[0]), float(r[1])) for r in (await conn.execute(sql, params)).all()]
 

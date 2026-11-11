@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from collections.abc import Callable
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
@@ -37,7 +38,11 @@ def _table(provider: EmbeddingProvider) -> str:
 async def embed_pending(
     engine: AsyncEngine, provider: EmbeddingProvider, batch_size: int = 64
 ) -> int:
-    """Embed up to batch_size chunks without a vector. Returns how many were stored."""
+    """Embed up to batch_size chunks without a vector. Returns how many chunks were stored.
+
+    A provider with a split() method gets one vector per window of a chunk (window_idx 0, 1,
+    ...); any other provider gets one vector per chunk, at window 0.
+    """
     table = _table(provider)
     select = text(
         f"SELECT c.id, c.text FROM chunks c "
@@ -45,28 +50,37 @@ async def embed_pending(
         f"ORDER BY c.id LIMIT CAST(:n AS integer)"
     )
     insert = text(
-        f"INSERT INTO {table} (chunk_id, embedding) "
-        f"SELECT r.chunk_id, CAST(r.emb AS vector) "
+        f"INSERT INTO {table} (chunk_id, window_idx, embedding) "
+        f"SELECT r.chunk_id, r.window_idx, CAST(r.emb AS vector) "
         f"FROM jsonb_to_recordset(CAST(CAST(:rows AS text) AS jsonb)) "
-        f"AS r(chunk_id bigint, emb text) "
+        f"AS r(chunk_id bigint, window_idx integer, emb text) "
         f"JOIN chunks c ON c.id = r.chunk_id "
-        f"ORDER BY r.chunk_id "
-        f"ON CONFLICT (chunk_id) DO NOTHING RETURNING chunk_id"
+        f"ORDER BY r.chunk_id, r.window_idx "
+        f"ON CONFLICT (chunk_id, window_idx) DO NOTHING RETURNING chunk_id"
     )
     async with engine.connect() as conn:
         rows = (await conn.execute(select, {"n": batch_size})).all()
     if not rows:
         return 0
 
-    vectors = await provider.embed([str(r[1])[:MAX_EMBED_CHARS] for r in rows])
-    if len(vectors) != len(rows):
+    split: Callable[[str], list[str]] | None = getattr(provider, "split", None)
+    windows: list[tuple[int, int, str]] = []
+    for r in rows:
+        body = str(r[1])[:MAX_EMBED_CHARS]
+        parts = (split(body) if split is not None else None) or [body]
+        windows.extend((int(r[0]), idx, part) for idx, part in enumerate(parts))
+
+    vectors = await provider.embed([part for _, _, part in windows])
+    if len(vectors) != len(windows):
         raise EmbeddingError("provider returned the wrong number of vectors")
 
-    pairs = zip(rows, vectors, strict=True)
-    payload = [{"chunk_id": int(r[0]), "emb": vector_literal(v)} for r, v in pairs]
+    payload = [
+        {"chunk_id": cid, "window_idx": idx, "emb": vector_literal(v)}
+        for (cid, idx, _), v in zip(windows, vectors, strict=True)
+    ]
     async with engine.begin() as conn:
         result = await conn.execute(insert, {"rows": json.dumps(payload)})
-        return len(result.all())
+        return len({int(row[0]) for row in result.all()})
 
 
 class EmbeddingWorker:

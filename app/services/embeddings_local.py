@@ -6,7 +6,8 @@ raises ImportError; callers treat that as "local provider unavailable".
 
 - Pooling: hidden state of the [CLS] token, L2-normalised (how BGE models are trained).
 - No query instruction prefix: chunks and queries go through the same embed() call.
-- Inputs longer than MAX_TOKENS are truncated, so only the head of a long chunk is embedded.
+- split() cuts a chunk into line-aligned windows of about WINDOW_TOKENS tokens; the
+  worker stores one vector per window. A single line over MAX_TOKENS is still truncated.
 - Inference is CPU-bound: it runs in a worker thread, one call at a time.
 Own table (chunk_embeddings_local), never mixed with openai. The fake test provider uses
 the same table, so never run both against one database.
@@ -28,6 +29,7 @@ MODEL_FILE = "model.onnx"
 TOKENIZER_FILE = "tokenizer.json"
 MAX_TOKENS = 512
 BATCH_SIZE = 16
+WINDOW_TOKENS = 256
 _REQUIRED_INPUTS = frozenset({"input_ids", "attention_mask"})
 _KNOWN_INPUTS = _REQUIRED_INPUTS | {"token_type_ids"}
 _OUTPUT = "last_hidden_state"
@@ -62,11 +64,34 @@ class LocalEmbeddingProvider:
         outputs = [o.name for o in session.get_outputs()]
         if _OUTPUT not in outputs:
             raise EmbeddingError(f"model has no {_OUTPUT} output: {outputs}")
+        counter = Tokenizer.from_file(str(base / TOKENIZER_FILE))
+        counter.no_truncation()
+        counter.no_padding()
+        self._counter = counter
         self._tokenizer = tokenizer
         self._session = session
         self._token_types = "token_type_ids" in inputs
         self._batch_size = batch_size
         self._lock = asyncio.Lock()
+
+    def split(self, text: str) -> list[str]:
+        """Cut text into line-aligned windows of about WINDOW_TOKENS tokens."""
+        lines = text.splitlines()
+        if not lines:
+            return [text]
+        counts = [len(e.ids) for e in self._counter.encode_batch(lines)]
+        windows: list[str] = []
+        current: list[str] = []
+        used = 0
+        for line, n in zip(lines, counts, strict=True):
+            if current and used + n > WINDOW_TOKENS:
+                windows.append("\n".join(current))
+                current, used = [], 0
+            current.append(line)
+            used += n
+        if current:
+            windows.append("\n".join(current))
+        return windows
 
     async def embed(self, texts: list[str]) -> list[list[float]]:
         if not texts:

@@ -120,3 +120,22 @@ async def test_concurrent_calls_match_sequential_results() -> None:
     for text, result in zip(texts, parallel, strict=True):
         expected = (await fresh.embed([text]))[0]
         assert dot(result[0], expected) == pytest.approx(1.0, abs=1e-4)
+
+
+@needs_model
+def test_split_keeps_short_text_whole(provider) -> None:
+    assert provider.split("one line\nsecond line") == ["one line\nsecond line"]
+
+
+@needs_model
+def test_split_cuts_long_text_into_line_aligned_windows(provider) -> None:
+    lines = [f"line {i}: connection refused to database host {i}" for i in range(200)]
+    windows = provider.split("\n".join(lines))
+    assert len(windows) > 1
+    assert "\n".join(windows).splitlines() == lines
+
+
+@needs_model
+def test_split_never_returns_nothing(provider) -> None:
+    assert provider.split("") == [""]
+    assert provider.split("x" * 20000) == ["x" * 20000]
