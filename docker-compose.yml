@@ -35,6 +35,9 @@ services:
 
   app:
     build: .
+    env_file:
+      - path: .env
+        required: false
     environment:
       DATABASE_URL: postgresql+asyncpg://failurelens:failurelens@db:5432/failurelens
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-openai}
