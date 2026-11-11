@@ -117,31 +117,44 @@ class OpenAILLM:
         model: str = "gpt-4.1-mini",
         timeout_s: float = 30.0,
         client: httpx.AsyncClient | None = None,
+        base_url: str = "https://api.openai.com/v1",
+        response_format: str = "json_schema",
     ) -> None:
         self._api_key = api_key
+        self._url = base_url.rstrip("/") + "/chat/completions"
+        self._response_format = response_format
         self._model = model
         self._client = client or httpx.AsyncClient(timeout=httpx.Timeout(timeout_s))
 
     async def complete(self, system: str, user: str) -> LLMResponse:
+        system_text = system
+        if self._response_format == "json_object":
+            system_text += (
+                "\n\nRespond with one JSON object that matches this JSON schema:\n"
+                + json.dumps(DIAGNOSIS_JSON_SCHEMA)
+            )
         body = {
             "model": self._model,
             "temperature": 0,
             "messages": [
-                {"role": "system", "content": system},
+                {"role": "system", "content": system_text},
                 {"role": "user", "content": user},
             ],
-            "response_format": {
+        }
+        if self._response_format == "json_object":
+            body["response_format"] = {"type": "json_object"}
+        else:
+            body["response_format"] = {
                 "type": "json_schema",
                 "json_schema": {
                     "name": "diagnosis",
                     "strict": True,
                     "schema": DIAGNOSIS_JSON_SCHEMA,
                 },
-            },
-        }
+            }
         try:
             resp = await self._client.post(
-                OPENAI_URL, json=body, headers={"Authorization": f"Bearer {self._api_key}"}
+                self._url, json=body, headers={"Authorization": f"Bearer {self._api_key}"}
             )
         except (httpx.TimeoutException, httpx.TransportError) as exc:
             raise TransientLLMError(f"transport: {type(exc).__name__}") from exc

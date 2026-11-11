@@ -52,11 +52,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.diagnosis_llm = None
     app.state.diagnosis_task = None
     app.state.diagnosis_stop = asyncio.Event()
-    if settings.diagnosis_runner_enabled and settings.openai_api_key:
+    llm_key = settings.llm_api_key or settings.openai_api_key
+    if settings.diagnosis_runner_enabled and llm_key:
         llm = OpenAILLM(
-            settings.openai_api_key,
+            llm_key,
             model=settings.llm_model,
             timeout_s=settings.llm_timeout_s,
+            base_url=settings.llm_base_url,
+            response_format=settings.llm_response_format,
         )
         engine = app.state.engine
         provider = app.state.embedding_provider
