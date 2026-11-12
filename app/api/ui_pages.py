@@ -29,6 +29,7 @@ PAGE = r"""<!doctype html>
   .nav a { color: var(--muted); text-decoration: none; padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; font-size: 0.92rem; background: rgba(255,255,255,0.03); transition: all 0.25s; }
   .nav a:hover { color: var(--text); border-color: rgba(255,111,97,0.6); box-shadow: 0 0 22px -4px rgba(255,111,97,0.55); }
   .nav a.active { color: #fff; border-color: rgba(255,111,97,0.7); background: rgba(255,111,97,0.12); }
+  .nav a[href="/ui/demo"] { color: var(--coral-soft); border-color: rgba(255,111,97,0.7); }
   main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 34px clamp(18px, 4vw, 40px) 90px; }
   h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -0.03em; }
   .sub { color: var(--muted); margin: 8px 0 28px; }
@@ -63,6 +64,16 @@ PAGE = r"""<!doctype html>
   .empty strong { display: block; font-size: 1.25rem; margin-bottom: 8px; }
   .empty p { margin: 0; color: var(--muted); line-height: 1.6; }
   .empty.warn { border-color: rgba(255,111,97,0.6); }
+  .demo { display: flex; flex-direction: column; align-items: center; gap: 22px; }
+  .breakbtn { background: var(--coral); color: #1a0f0d; border: 0; border-radius: 18px; padding: 22px 64px; font-size: 1.5rem; font-weight: 800; letter-spacing: 0.02em; box-shadow: 0 0 50px -4px rgba(255,111,97,0.8); transition: transform 0.2s, box-shadow 0.3s; }
+  .breakbtn:hover { transform: translateY(-2px); box-shadow: 0 0 70px 0 rgba(255,111,97,0.95); }
+  .breakbtn:disabled { opacity: 0.6; cursor: wait; transform: none; }
+  .stage { color: var(--muted); text-align: center; min-height: 1.4em; }
+  .stage.hot { color: var(--coral-soft); }
+  .console { width: 100%; max-width: 820px; height: 300px; overflow: auto; background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; font: 0.8rem/1.7 ui-monospace, "Cascadia Code", Consolas, monospace; color: #b6bec7; scrollbar-width: thin; scrollbar-color: #4a5460 transparent; white-space: pre-wrap; word-break: break-word; }
+  .console .err { color: var(--coral); }
+  .gobtn { display: inline-block; margin-top: 16px; padding: 11px 22px; border-radius: 12px; border: 1px solid rgba(255,111,97,0.7); color: #fff; text-decoration: none; background: rgba(255,111,97,0.12); }
+  .result { width: 100%; }
   @media (max-width: 600px) { .row { flex-wrap: wrap; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
@@ -87,7 +98,7 @@ function el(tag, cls, text) {
   return e;
 }
 
-const NAV = [["/", "Search", "search"], ["/ui/documents", "Documents", "documents"], ["/ui/incidents", "Incidents", "incidents"], ["/ui/signatures", "Signatures", "signatures"], ["/ui/status", "Status", "status"]];
+const NAV = [["/", "Search", "search"], ["/ui/documents", "Documents", "documents"], ["/ui/incidents", "Incidents", "incidents"], ["/ui/signatures", "Signatures", "signatures"], ["/ui/status", "Status", "status"], ["/ui/demo", "Break it", "demo"]];
 NAV.forEach((n) => {
   const a = el("a", n[2] === PAGE ? "active" : "", n[1]);
   a.href = n[0];
@@ -258,8 +269,118 @@ async function pageStatus() {
   setInterval(tick, 5000);
 }
 
+const SCEN = [
+  { svc: "payments-api", title: "database connection pool exhausted",
+    info: ["POST /checkout 200 in 84ms", "GET /cart 200 in 31ms", "GET /prices 200 in 12ms"],
+    err: ["db.pool timeout waiting for a free connection, pool exhausted (50 of 50 in use)", "checkout failed to charge the card: no database connection available"] },
+  { svc: "auth-service", title: "login tokens failing to verify",
+    info: ["GET /health 200", "POST /login 200 in 120ms", "POST /refresh 200 in 45ms"],
+    err: ["token verification failed: signing key not found in key store", "login rejected: upstream key service unreachable"] },
+  { svc: "orders-worker", title: "worker running out of memory",
+    info: ["picked up order batch", "order batch saved", "heartbeat ok"],
+    err: ["worker crashed while processing order batch: out of memory", "consumer lag keeps growing, queue is not draining"] },
+  { svc: "search-index", title: "disk full on index node",
+    info: ["segment merged", "query served in 22ms", "snapshot started"],
+    err: ["write to index segment failed: no space left on device", "index node switched to read only mode"] },
+  { svc: "notify-service", title: "email provider timing out",
+    info: ["queued welcome email", "queued receipt email", "template cache refreshed"],
+    err: ["smtp provider request timed out after retries", "notification dropped: provider returned service unavailable"] },
+];
+
+async function pageDemo() {
+  sub.textContent = "Crash a pretend service on purpose and watch FailureLens catch it.";
+  const wrap = el("div", "demo");
+  const btn = el("button", "breakbtn", "Break it");
+  btn.type = "button";
+  const stage = el("div", "stage", "Ready. Click the button to crash a pretend service.");
+  const con = el("div", "console", "Live log stream will appear here.");
+  const result = el("div", "result");
+  wrap.append(btn, stage, con, result);
+  out.replaceChildren(wrap);
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const stamp = (off) => new Date(Date.now() + off).toISOString().replace("T", " ").replace("Z", "") + "000";
+  let n = 0;
+  try { n = parseInt(localStorage.getItem("fl_demo_n") || "0", 10) || 0; } catch (e) { n = 0; }
+
+  async function post(svc, src, seq, text) {
+    for (let tries = 0; tries < 5; tries++) {
+      const r = await fetch("/ingest/stream", {
+        method: "POST",
+        headers: { "X-Service": svc, "X-Source-Id": src, "Idempotency-Key": src + "-" + seq, "X-Sequence": String(seq) },
+        body: text,
+      });
+      if (r.status === 429) { await sleep(1000); continue; }
+      if (!r.ok) throw new Error("The server said " + r.status + " when sending logs");
+      return;
+    }
+    throw new Error("The server is busy right now. Try again in a moment.");
+  }
+
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    result.replaceChildren();
+    con.replaceChildren();
+    const sc = SCEN[n % SCEN.length];
+    const round = Math.floor(n / SCEN.length);
+    const svc = sc.svc + (round ? "-" + (round + 1) : "");
+    n += 1;
+    try { localStorage.setItem("fl_demo_n", String(n)); } catch (e) { /* ignore */ }
+    const src = "demo-" + Date.now().toString(36);
+    const t0 = Date.now();
+    stage.className = "stage hot";
+    stage.textContent = "Crashing " + svc + ": " + sc.title + "...";
+    try {
+      for (let seq = 1; seq <= 6; seq++) {
+        const lines = [];
+        for (let k = 0; k < 3; k++) lines.push(stamp(k * 40) + " INFO " + sc.info[(seq + k) % sc.info.length]);
+        sc.err.forEach((m, k) => lines.push(stamp(150 + k * 40) + " ERROR " + m));
+        await post(svc, src, seq, lines.join("\n") + "\n");
+        for (const l of lines) {
+          con.appendChild(el("div", l.indexOf(" ERROR ") > -1 ? "err" : "", svc + " " + l));
+          con.scrollTop = con.scrollHeight;
+          await sleep(80);
+        }
+        await sleep(500);
+      }
+      stage.textContent = "Logs sent. Waiting for FailureLens to spot the failure...";
+      let found = null;
+      const wait0 = Date.now();
+      while (!found && Date.now() - wait0 < 45000) {
+        await sleep(1500);
+        try {
+          const d = await api("/incidents");
+          found = ((d && d.items) || []).find((it) => it.service === svc) || null;
+        } catch (e) { /* keep waiting */ }
+      }
+      const c = el("div", "empty");
+      if (found) {
+        stage.textContent = "Caught it.";
+        c.appendChild(el("strong", "", "Incident #" + found.id + " opened"));
+        c.appendChild(el("p", "", "FailureLens spotted " + svc + " failing (" + sc.title + ") about " + Math.round((Date.now() - t0) / 1000) + " seconds after you pressed the button. Trigger: " + (found.trigger || "new failure") + "."));
+      } else {
+        stage.textContent = "No incident yet.";
+        c.appendChild(el("strong", "", "Still waiting"));
+        c.appendChild(el("p", "", "The logs were sent but no incident showed up yet. Check the Incidents page in a moment."));
+      }
+      const a = el("a", "gobtn", "See it on the Incidents page");
+      a.href = "/ui/incidents";
+      c.appendChild(a);
+      result.replaceChildren(c);
+    } catch (err) {
+      stage.textContent = "Something went wrong.";
+      const c = el("div", "empty warn");
+      c.appendChild(el("strong", "", "Could not send the logs"));
+      c.appendChild(el("p", "", String(err.message || err)));
+      result.replaceChildren(c);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
 async function load() {
-  const pages = { documents: pageDocuments, incidents: pageIncidents, signatures: pageSignatures, status: pageStatus };
+  const pages = { documents: pageDocuments, incidents: pageIncidents, signatures: pageSignatures, status: pageStatus, demo: pageDemo };
   try { await pages[PAGE](); } catch (err) { fail(err); }
 }
 load();
@@ -273,6 +394,7 @@ TITLES = {
     "incidents": "Incidents",
     "signatures": "Signatures",
     "status": "Status",
+    "demo": "Break it",
 }
 
 
@@ -294,6 +416,11 @@ async def ui_incidents() -> HTMLResponse:
 @router.get("/ui/signatures", response_class=HTMLResponse, include_in_schema=False)
 async def ui_signatures() -> HTMLResponse:
     return _page("signatures")
+
+
+@router.get("/ui/demo", response_class=HTMLResponse, include_in_schema=False)
+async def ui_demo() -> HTMLResponse:
+    return _page("demo")
 
 
 @router.get("/ui/status", response_class=HTMLResponse, include_in_schema=False)
