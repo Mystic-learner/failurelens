@@ -117,6 +117,16 @@ PAGE = r"""<!doctype html>
   @keyframes mgrow { from { transform: scaleX(0); } }
   .mmsg { color: var(--muted); font-size: 0.9rem; }
 
+  /* ---------- dark scrollbars ---------- */
+  html { color-scheme: dark; }
+  pre.open { scrollbar-width: thin; scrollbar-color: #4a5460 transparent; }
+
+  /* ---------- voice button ---------- */
+  .mic { flex: 0 0 auto; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--line); color: var(--muted); cursor: pointer; transition: all 0.25s; }
+  .mic:hover { color: var(--text); border-color: rgba(255,111,97,0.6); box-shadow: 0 0 22px -4px rgba(255,111,97,0.55); }
+  .mic.on { color: #fff; background: var(--coral); border-color: var(--coral); animation: micpulse 1.1s ease-in-out infinite; }
+  @keyframes micpulse { 50% { box-shadow: 0 0 0 10px rgba(255,111,97,0); } 0% { box-shadow: 0 0 0 0 rgba(255,111,97,0.6); } }
+
   /* ---------- results ---------- */
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 26px; align-items: start; }
   .notice { grid-column: 1 / -1; max-width: 640px; margin: 20px auto 0; text-align: center; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 34px 28px; color: var(--muted); line-height: 1.6; box-shadow: 0 0 60px -14px rgba(255,111,97,0.35); }
@@ -195,6 +205,7 @@ PAGE = r"""<!doctype html>
         <div class="box" id="box">
           <div class="inner">
             <input type="text" id="q" placeholder="e.g. instance missing on hypervisor" autocomplete="off" autofocus>
+            <button type="button" class="mic" id="mic" title="Search by voice" aria-label="Search by voice"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
             <div class="dd" id="dd">
               <button type="button" class="ddbtn" id="ddbtn" title="Number of results"><span id="kval">8</span></button>
               <div class="ddmenu" id="ddmenu">
@@ -392,6 +403,35 @@ PAGE = r"""<!doctype html>
       box.classList.remove("loading");
       $("go").disabled = false;
     }
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const micBtn = $("mic");
+  if (!SR) {
+    micBtn.style.display = "none";
+  } else {
+    const rec = new SR();
+    rec.lang = "en-US";
+    rec.interimResults = true;
+    rec.continuous = false;
+    let heard = "";
+    rec.onstart = () => { micBtn.classList.add("on"); statusEl.textContent = "Listening..."; };
+    rec.onresult = (e) => {
+      heard = Array.from(e.results).map((r) => r[0].transcript).join(" ");
+      $("q").value = heard;
+    };
+    rec.onerror = (e) => { statusEl.textContent = "Mic problem: " + e.error; };
+    rec.onend = () => {
+      micBtn.classList.remove("on");
+      const said = heard.trim().replace(/[.,!?]+$/, "");
+      heard = "";
+      if (said) search(said);
+    };
+    micBtn.addEventListener("click", () => {
+      if (micBtn.classList.contains("on")) { rec.stop(); return; }
+      heard = "";
+      try { rec.start(); } catch (err) { statusEl.textContent = "Mic problem: " + err.message; }
+    });
   }
 
   $("f").addEventListener("submit", (e) => {
