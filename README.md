@@ -4,6 +4,30 @@ Real-time log ingestion, failure detection and RAG root-cause diagnosis. Logs st
 
 Runs on free tools only: embeddings are computed locally (bge-small-en-v1.5 on CPU), so no API key is needed for ingest, search or the dashboard.
 
+## Demo
+
+Describe a failure in plain words and FailureLens finds the log lines that explain it. When an error is new or spiking, it opens an incident and an LLM writes a root cause backed by quoted log lines.
+
+![A diagnosed incident](docs/incident.png)
+
+### Try it in 2 minutes
+
+1. `docker compose up -d`, then open http://localhost:8000/
+2. Click **Upload a log file** and add a log (tested with the OpenStack_2k sample).
+3. Try these searches:
+   - `database has 1 instance but hypervisor has 0`
+   - `server was deleted`
+   - `how long did it take to build the VM`
+   - `base file removed`
+   - `no instances found for event`
+   - `banana bread recipe` (should answer "I don't know")
+4. Open **Break it** in the menu and press the button. It streams fake errors for a pretend service, an incident opens, and the **Incidents** page shows the diagnosis with evidence.
+
+### Free setup
+
+- Embeddings run locally (bge-small ONNX), so there are no embedding costs.
+- Diagnosis uses any OpenAI-compatible API. The defaults in `.env.example` use Google's free Gemini tier. Get a key at https://aistudio.google.com, then put it in your local `.env` as `LLM_API_KEY=` (never commit it). Without a key, search still works and incidents show "No diagnosis yet".
+
 ## Components
 
 | Path | What it is |

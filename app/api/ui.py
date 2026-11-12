@@ -419,7 +419,7 @@ PAGE = r"""<!doctype html>
     micBtn.style.display = "none";
   } else {
     const rec = new SR();
-    rec.lang = "en-US";
+    rec.lang = "en-IN";
     rec.interimResults = true;
     rec.continuous = false;
     let heard = "";
@@ -431,6 +431,7 @@ PAGE = r"""<!doctype html>
     rec.onerror = (e) => { statusEl.textContent = "Mic problem: " + e.error; };
     rec.onend = () => {
       micBtn.classList.remove("on");
+      if (statusEl.textContent === "Listening...") statusEl.textContent = "";
       const said = heard.trim().replace(/[.,!?]+$/, "");
       heard = "";
       if (said) search(said);
