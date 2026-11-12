@@ -129,7 +129,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(metrics.router)
     app.include_router(documents.router)
     from app.api import ui as ui_page
-from app.api import ui_pages
+    from app.api import ui_pages
 
     app.include_router(ui_page.router)
     app.include_router(ui_pages.router)
