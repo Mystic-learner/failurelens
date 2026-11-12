@@ -68,6 +68,7 @@ Notes:
 - Local vectors live in their own table (`chunk_embeddings_local`) and are never mixed with OpenAI vectors.
 - Switch provider with `EMBEDDING_PROVIDER=local|openai|fake`. `openai` needs `OPENAI_API_KEY`. `fake` is for tests.
 - Point at a different model folder with `LOCAL_MODEL_DIR`.
+- `MIN_SIMILARITY` (default 0.65) is the least vector similarity a vector-only hit needs to count as evidence. It was tuned on 11 eval cases for bge-small only (answerable 0.708 to 0.851, off-topic 0.594 to 0.689), so treat it as provisional. OpenAI embeddings have a different score range and need their own value. A request can override it with `min_similarity`.
 
 ## Configuration
 
