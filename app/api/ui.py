@@ -121,6 +121,13 @@ PAGE = r"""<!doctype html>
   html { color-scheme: dark; }
   pre.open { scrollbar-width: thin; scrollbar-color: #4a5460 transparent; }
 
+  /* ---------- top menu ---------- */
+  .top { justify-content: center; }
+  .nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .nav a { color: var(--muted); text-decoration: none; padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; font-size: 0.92rem; background: rgba(255,255,255,0.03); transition: all 0.25s; }
+  .nav a:hover { color: var(--text); border-color: rgba(255,111,97,0.6); box-shadow: 0 0 22px -4px rgba(255,111,97,0.55); }
+  .nav a.active { color: #fff; border-color: rgba(255,111,97,0.7); background: rgba(255,111,97,0.12); }
+
   /* ---------- voice button ---------- */
   .mic { flex: 0 0 auto; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--line); color: var(--muted); cursor: pointer; transition: all 0.25s; }
   .mic:hover { color: var(--text); border-color: rgba(255,111,97,0.6); box-shadow: 0 0 22px -4px rgba(255,111,97,0.55); }
@@ -192,7 +199,7 @@ PAGE = r"""<!doctype html>
     <div class="fl-logs fl-right"><div>12:04:53 nova.scheduler INFO  host selected<br>12:04:50 nova.compute <b>ERROR</b>  hypervisor not responding<br>12:04:47 neutron.server INFO  network ready<br>12:04:43 nova.api INFO  POST /v2/servers 202<br>12:04:40 nova.conductor <b>WARN</b>  retrying request 2 of 3<br>12:04:36 keystone INFO  token validated<br>12:04:33 nova.compute INFO  server was deleted<br>12:04:31 nova.api <b>ERROR</b>  no instances found for event<br>12:04:27 glance.api INFO  image cache hit<br>12:04:25 nova.compute <b>WARN</b>  base file removed<br>12:04:22 cinder.volume INFO  volume attached<br>12:04:19 nova.compute INFO  instance build took 21.4s<br>12:04:17 neutron.agent <b>ERROR</b>  port binding failed<br>12:04:14 nova.scheduler INFO  filter pass: 3 hosts<br>12:04:12 nova.api INFO  GET /v2/servers/detail 200<br>12:04:11 nova.compute <b>WARN</b>  1 instances in database, 0 on hypervisor<br>12:04:53 nova.scheduler INFO  host selected<br>12:04:50 nova.compute <b>ERROR</b>  hypervisor not responding<br>12:04:47 neutron.server INFO  network ready<br>12:04:43 nova.api INFO  POST /v2/servers 202<br>12:04:40 nova.conductor <b>WARN</b>  retrying request 2 of 3<br>12:04:36 keystone INFO  token validated<br>12:04:33 nova.compute INFO  server was deleted<br>12:04:31 nova.api <b>ERROR</b>  no instances found for event<br>12:04:27 glance.api INFO  image cache hit<br>12:04:25 nova.compute <b>WARN</b>  base file removed<br>12:04:22 cinder.volume INFO  volume attached<br>12:04:19 nova.compute INFO  instance build took 21.4s<br>12:04:17 neutron.agent <b>ERROR</b>  port binding failed<br>12:04:14 nova.scheduler INFO  filter pass: 3 hosts<br>12:04:12 nova.api INFO  GET /v2/servers/detail 200<br>12:04:11 nova.compute <b>WARN</b>  1 instances in database, 0 on hypervisor</div></div>
   </div>
 
-  <div class="top">
+  <div class="top"><nav class="nav"><a href="/" class="active">Search</a><a href="/ui/documents">Documents</a><a href="/ui/incidents">Incidents</a><a href="/ui/signatures">Signatures</a><a href="/ui/status">Status</a></nav>
     <input type="file" id="file">
   </div>
 
