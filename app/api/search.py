@@ -17,7 +17,8 @@ router = APIRouter()
 class SearchRequest(BaseModel):
     query: str = Field(min_length=1, max_length=20000)
     top_k: int = Field(default=8, ge=1, le=50)
-    min_similarity: float = Field(default=0.5, ge=0.0, le=1.0)
+    # None means use the server's configured default (Settings.min_similarity).
+    min_similarity: float | None = Field(default=None, ge=0.0, le=1.0)
     service: str | None = Field(default=None, max_length=200)
     since: datetime | None = None
     until: datetime | None = None
@@ -51,7 +52,11 @@ async def search_endpoint(body: SearchRequest, request: Request) -> SearchRespon
         provider,
         body.query,
         top_k=body.top_k,
-        min_similarity=body.min_similarity,
+        min_similarity=(
+            body.min_similarity
+            if body.min_similarity is not None
+            else request.app.state.settings.min_similarity
+        ),
         filters=SearchFilters(body.service, body.since, body.until),
     )
     return SearchResponse(
