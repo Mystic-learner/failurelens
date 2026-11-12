@@ -104,6 +104,19 @@ PAGE = r"""<!doctype html>
   input[type=file] { display: none; }
   #status { min-height: 1.4em; margin-top: 18px; font-size: 0.95rem; color: var(--muted); }
 
+  /* ---------- confidence meter ---------- */
+  .meter { grid-column: 1 / -1; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 16px 20px; --mc: #f2b84b; }
+  .meter.strong { --mc: #5fd49a; }
+  .meter.none { --mc: #7f95ab; }
+  .mrow { display: flex; align-items: center; gap: 10px; }
+  .mdot { width: 10px; height: 10px; border-radius: 50%; background: var(--mc); box-shadow: 0 0 12px var(--mc); }
+  .mrow b { color: var(--mc); font-size: 1.05rem; }
+  .mnum { margin-left: auto; color: var(--muted); font-size: 0.85rem; }
+  .mbar { height: 6px; border-radius: 99px; background: #2b2f35; margin: 12px 0 10px; overflow: hidden; }
+  .mbar i { display: block; height: 100%; border-radius: 99px; background: var(--mc); box-shadow: 0 0 12px var(--mc); transform-origin: left; animation: mgrow 0.9s ease; }
+  @keyframes mgrow { from { transform: scaleX(0); } }
+  .mmsg { color: var(--muted); font-size: 0.9rem; }
+
   /* ---------- results ---------- */
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 26px; align-items: start; }
   .notice { grid-column: 1 / -1; max-width: 640px; margin: 20px auto 0; text-align: center; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 34px 28px; color: var(--muted); line-height: 1.6; box-shadow: 0 0 60px -14px rgba(255,111,97,0.35); }
@@ -259,11 +272,47 @@ PAGE = r"""<!doctype html>
     for (let i = 0; i < Math.min(n, 6); i++) results.appendChild(el("div", "card skel"));
   }
 
+  const STRONG_AT = 0.75;
+  function meter(data) {
+    const hits = data.hits || [];
+    const sims = hits.map((h) => h.similarity).filter((s) => typeof s === "number");
+    const top = sims.length ? Math.max(...sims) : null;
+    let state = "weak";
+    let label = "Weak match";
+    let msg = "These lines look related, but check them before trusting them.";
+    if (data.inconclusive || hits.length === 0) {
+      state = "none";
+      label = "Not sure";
+      msg = "Nothing in your logs matches this well, so FailureLens will not guess.";
+    } else if (top === null) {
+      msg = "Matched on exact words only, with no meaning score.";
+    } else if (top >= STRONG_AT) {
+      state = "strong";
+      label = "Strong match";
+      msg = "The top result is very close to what you described.";
+    }
+    const m = el("div", "meter " + state);
+    const row = el("div", "mrow");
+    row.appendChild(el("span", "mdot"));
+    row.appendChild(el("b", "", label));
+    if (top !== null) row.appendChild(el("span", "mnum", Math.round(top * 100) + "% similar"));
+    m.appendChild(row);
+    const bar = el("div", "mbar");
+    const fill = document.createElement("i");
+    const pct = state === "none" ? 8 : (top === null ? 50 : top * 100);
+    fill.style.width = Math.max(8, Math.min(100, pct)) + "%";
+    bar.appendChild(fill);
+    m.appendChild(bar);
+    m.appendChild(el("div", "mmsg", msg));
+    return m;
+  }
+
   function render(data, query) {
     results.replaceChildren();
     if (data.degraded) results.appendChild(notice("warn", "Partial results", "Some search sources were unavailable, so results may be incomplete."));
+    results.appendChild(meter(data));
     if (data.inconclusive || !data.hits || data.hits.length === 0) {
-      results.appendChild(notice("", "Nothing matched closely enough", data.reason || "Try describing the problem with different words, or upload the log you want to search."));
+      results.appendChild(notice("", "I don't know", data.reason || "Try describing the problem with different words, or upload the log you want to search."));
       return;
     }
     data.hits.forEach((h, i) => {
@@ -319,17 +368,21 @@ PAGE = r"""<!doctype html>
     $("go").disabled = true;
     statusEl.textContent = "Searching...";
     const k = parseInt($("kval").textContent, 10);
+    const MAX_Q = 2000;
+    const trimmed = query.length > MAX_Q;
+    const sent = trimmed ? query.slice(0, MAX_Q) : query;
     skeletons(k);
     const t0 = performance.now();
     try {
       const r = await fetch("/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, top_k: k }),
+        body: JSON.stringify({ query: sent, top_k: k }),
       });
       if (!r.ok) throw new Error(await errorText(r));
       const data = await r.json();
-      render(data, query);
+      render(data, sent);
+      if (trimmed) results.prepend(notice("warn", "Long input trimmed", "Only the first " + MAX_Q + " characters were searched. For best results paste just the error line."));
       const n = data.hits ? data.hits.length : 0;
       statusEl.textContent = n + " result" + (n === 1 ? "" : "s") + " in " + Math.round(performance.now() - t0) + " ms";
     } catch (err) {
