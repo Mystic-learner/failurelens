@@ -184,7 +184,9 @@ async function pageIncidents() {
     const card = el("article", "card");
     card.appendChild(el("h3", "", "#" + it.id + (it.service ? " - " + it.service : "")));
     const tags = el("div", "tags");
-    if (it.status) tags.appendChild(el("span", "badge hot", it.status));
+    const dstat = it.diagnosis && typeof it.diagnosis === "object" ? it.diagnosis.status : null;
+    const label = dstat === "answered" ? "diagnosed" : dstat === "failed" ? "diagnosis failed" : it.status;
+    if (label) tags.appendChild(el("span", dstat === "failed" ? "badge" : "badge hot", label));
     if (it.level) tags.appendChild(el("span", "badge", it.level));
     if (it.diagnosis_deferred) tags.appendChild(el("span", "badge", "deferred"));
     if (it.degraded) tags.appendChild(el("span", "badge", "degraded"));
@@ -192,10 +194,34 @@ async function pageIncidents() {
     card.appendChild(el("div", "meta", "Seen " + num(it.signature_count) + " times - opened " + fmt(it.created_at) + (it.resolved_at ? " - resolved " + fmt(it.resolved_at) : "")));
     if (it.trigger) card.appendChild(el("pre", "", show(it.trigger)));
     if (it.diagnosis && typeof it.diagnosis === "object") {
-      Object.keys(it.diagnosis).forEach((k) => {
-        card.appendChild(el("div", "lbl", k.replace(/_/g, " ")));
-        card.appendChild(el("pre", "", show(it.diagnosis[k])));
-      });
+      const dg = it.diagnosis;
+      const res = dg.result && typeof dg.result === "object" ? dg.result : null;
+      if (res) {
+        if (res.confidence) tags.appendChild(el("span", "badge", "confidence: " + res.confidence));
+        if (res.root_cause) {
+          card.appendChild(el("div", "lbl", "Root cause"));
+          card.appendChild(el("p", "", res.root_cause));
+        }
+        if (Array.isArray(res.evidence) && res.evidence.length) {
+          card.appendChild(el("div", "lbl", "Evidence"));
+          res.evidence.forEach((ev) => card.appendChild(el("pre", "", ev.quoted_line || show(ev))));
+        }
+        if (Array.isArray(res.next_checks) && res.next_checks.length) {
+          card.appendChild(el("div", "lbl", "Next checks"));
+          const ul = el("ul", "");
+          res.next_checks.forEach((c) => ul.appendChild(el("li", "", c)));
+          card.appendChild(ul);
+        }
+        if (res.suggested_fix) {
+          card.appendChild(el("div", "lbl", "Suggested fix"));
+          card.appendChild(el("p", "", res.suggested_fix));
+        }
+      } else if (dg.status === "failed" || dg.error) {
+        card.appendChild(el("div", "lbl", "Diagnosis failed"));
+        card.appendChild(el("pre", "", show(dg.error)));
+      } else {
+        card.appendChild(el("div", "lbl", "No diagnosis yet"));
+      }
     } else {
       card.appendChild(el("div", "lbl", "No diagnosis yet"));
     }
