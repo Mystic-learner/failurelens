@@ -4,7 +4,6 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.services.ingest_queue import IngestItem
-from tests.appclient import make_settings, running_client
 
 pytestmark = pytest.mark.integration
 
@@ -27,30 +26,6 @@ async def test_health_reports_queue_depth(client: httpx.AsyncClient) -> None:
         queue.put(IngestItem("svc", "src", f"k{i}", i, b"x"))
     body = (await client.get("/health")).json()
     assert body["queue"] == {"depth": 3, "max_size": 5}
-
-
-async def test_health_degraded_when_openai_key_missing(
-    migrated_db_url: str, engine: AsyncEngine
-) -> None:
-    settings = make_settings(
-        database_url=migrated_db_url, embedding_provider="openai", openai_api_key=None
-    )
-    async with running_client(settings) as client:
-        response = await client.get("/health")
-    assert response.status_code == 200
-    body = response.json()
-    assert body["status"] == "degraded"
-    assert body["embedding"] == {"provider": "openai", "configured": False}
-
-
-async def test_health_ok_when_openai_key_present(migrated_db_url: str, engine: AsyncEngine) -> None:
-    settings = make_settings(
-        database_url=migrated_db_url, embedding_provider="openai", openai_api_key="sk-test"
-    )
-    async with running_client(settings) as client:
-        body = (await client.get("/health")).json()
-    assert body["status"] == "ok"
-    assert body["embedding"]["configured"] is True
 
 
 async def test_health_recovers_after_connections_are_killed(

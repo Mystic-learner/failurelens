@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.diagnosis_llm = None
     app.state.diagnosis_task = None
     app.state.diagnosis_stop = asyncio.Event()
-    llm_key = settings.llm_api_key or settings.openai_api_key
+    llm_key = settings.llm_api_key
     if settings.diagnosis_runner_enabled and llm_key:
         llm = OpenAILLM(
             llm_key,

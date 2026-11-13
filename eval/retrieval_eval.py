@@ -185,7 +185,7 @@ async def run(cases_path: Path, out_path: Path, k: int) -> int:
         return 1
     provider = make_provider(settings)
     if provider is None:
-        print("no embedding provider available: set OPENAI_API_KEY with EMBEDDING_PROVIDER=openai")
+        print("no embedding provider available: check the local model files in the models folder")
         return 2
 
     engine = create_engine(settings)

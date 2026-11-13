@@ -15,7 +15,6 @@ def test_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
         "MAX_BODY_BYTES",
         "QUEUE_MAX_SIZE",
         "EMBEDDING_PROVIDER",
-        "OPENAI_API_KEY",
         "CORS_ORIGINS",
     ):
         monkeypatch.delenv(name, raising=False)
@@ -24,7 +23,6 @@ def test_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     assert s.queue_max_size == 1000
     assert s.embedding_provider == "local"
     assert s.max_body_bytes == 10 * 1024 * 1024
-    assert s.openai_api_key is None
 
 
 def test_env_overrides(monkeypatch: pytest.MonkeyPatch) -> None:

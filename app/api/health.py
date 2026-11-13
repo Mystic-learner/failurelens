@@ -20,8 +20,6 @@ router = APIRouter()
 
 def embedding_configured(settings: Settings) -> bool:
     """Whether the selected embedding provider can run. No external call is made."""
-    if settings.embedding_provider == "openai":
-        return bool(settings.openai_api_key)
     if settings.embedding_provider == "fake":
         return True
     return local_provider_available(settings)

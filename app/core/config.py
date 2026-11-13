@@ -19,19 +19,18 @@ class Settings(BaseSettings):
     queue_max_size: int = Field(default=1000, gt=0)
     queue_max_bytes: int = Field(default=64 * 1024 * 1024, gt=0)
     queue_retry_after_s: int = Field(default=1, ge=1)
-    embedding_provider: Literal["openai", "local", "fake"] = "local"
+    embedding_provider: Literal["local", "fake"] = "local"
     # Minimum vector similarity for a vector-only hit to count as evidence. Tuned on 11 eval
     # cases for the local bge-small model (answerable >= 0.708, off-topic <= 0.689); other
     # providers have different score distributions and need their own value.
     min_similarity: float = 0.65
     # Directory with model.onnx and tokenizer.json for the local provider.
     local_model_dir: str = str(_DEFAULT_MODEL_DIR)
-    openai_api_key: str | None = None
-    llm_model: str = "gpt-4.1-mini"
-    # Any OpenAI-compatible chat API. Falls back to OPENAI_API_KEY when unset.
+    llm_model: str = "gemini-3.1-flash-lite"
+    # Any OpenAI-compatible chat API. Default: Google Gemini free tier (no card needed).
     llm_api_key: str | None = None
-    llm_base_url: str = "https://api.openai.com/v1"
-    llm_response_format: Literal["json_schema", "json_object"] = "json_schema"
+    llm_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"
+    llm_response_format: Literal["json_schema", "json_object"] = "json_object"
     llm_timeout_s: float = Field(default=30.0, gt=0)
     llm_hourly_token_cap: int = Field(default=200_000, gt=0)
     diagnosis_runner_enabled: bool = True

@@ -16,7 +16,6 @@ Confidence = Literal["high", "medium", "low", "inconclusive"]
 Status = Literal["answered", "inconclusive", "failed"]
 
 MIN_QUOTE_LEN = 8
-OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 INCONCLUSIVE_ROOT_CAUSE = "Inconclusive: no verifiable evidence in the retrieved logs."
 
 
