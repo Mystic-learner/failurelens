@@ -123,3 +123,14 @@ def test_single_1mb_line_is_fast() -> None:
         start = time.perf_counter()
         redact(line)
         assert time.perf_counter() - start < 5.0
+
+
+def test_plain_word_after_token_colon_in_a_sentence_is_kept() -> None:
+    s = "failed to store session token: Redis is out of memory"
+    assert redact(s) == s
+
+
+def test_secret_like_values_after_a_key_are_still_redacted() -> None:
+    assert redact("token: hunter") == "token: <SECRET>"
+    assert redact("password: hunter2 is wrong") == "password: <SECRET> is wrong"
+    assert redact("token=Redis is out") == "token=<SECRET> is out"

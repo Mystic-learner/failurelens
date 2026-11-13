@@ -106,10 +106,25 @@ _KV_RE = re.compile(
 )
 
 
+# A plain word after "key:" followed by a sentence word is prose, not a secret
+# (e.g. "failed to store session token: Redis is out of memory").
+_PROSE_AFTER = re.compile(
+    r"[ \t]+(?:is|was|are|were|has|had|not|failed|cannot|can't|expired|missing)\b", re.IGNORECASE
+)
+
+
 def _kv_repl(m: re.Match[str]) -> str:
     quote = m.group("q")
     value = m.group("qv") if quote else m.group("uv")
     if value == "" or _PLACEHOLDER.fullmatch(value):
+        return m.group(0)
+    if (
+        not quote
+        and not m.group("scheme")
+        and value.isalpha()
+        and m.group("k").rstrip(" \t").endswith(":")
+        and _PROSE_AFTER.match(m.string, m.end())
+    ):
         return m.group(0)
     if quote:
         return f"{m.group('k')}{quote}<SECRET>{quote}"
