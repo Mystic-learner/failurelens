@@ -214,9 +214,70 @@ PAGE = r"""<!doctype html>
           <div class="inner">
             <input type="text" id="q" placeholder="e.g. instance missing on hypervisor" autocomplete="off" autofocus>
 <select id="scope" title="Search scope"><option value="">All files</option></select>
+<style>
+#scope { appearance: none; -webkit-appearance: none; height: 44px; width: 128px; flex: 0 0 auto;
+  padding: 0 30px 0 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.10);
+  background-color: rgba(255,255,255,0.04); color: #e6e6e6; font: inherit; font-size: 0.9rem;
+  cursor: pointer; text-overflow: ellipsis; white-space: nowrap; outline: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23aaaaaa' stroke-width='1.6' stroke-linecap='round'/></svg>");
+  background-repeat: no-repeat; background-position: right 12px center; }
+#scope:hover, #scope:focus { border-color: rgba(255,111,97,0.7); }
+#scope { display: none !important; }
+#scopewrap { flex: 0 0 auto; }
+#scopebtn { height: 44px; width: 128px; padding: 0 30px 0 14px; text-align: left; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10); background-color: rgba(255,255,255,0.04); color: #e6e6e6;
+  font: inherit; font-size: 0.9rem; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23aaaaaa' stroke-width='1.6' stroke-linecap='round'/></svg>");
+  background-repeat: no-repeat; background-position: right 12px center; }
+#scopebtn:hover, #scopebtn:focus { border-color: rgba(255,111,97,0.7); outline: none; }
+#scopemenu { display: none; position: fixed; z-index: 1000; padding: 6px; border-radius: 14px; background: #1a1b1f;
+  border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 12px 40px rgba(0,0,0,0.6); max-height: 260px; overflow: auto; }
+#scopemenu.open { display: block; }
+#scopemenu button { display: block; width: 100%; text-align: left; padding: 9px 12px; border: 0; border-radius: 9px;
+  background: transparent; color: #e6e6e6; font: inherit; font-size: 0.9rem; cursor: pointer;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#scopemenu button:hover { background: rgba(255,255,255,0.07); }
+#scopemenu button.sel { background: rgba(255,111,97,0.16); color: #fff; }
+</style>
+<div id="scopewrap"><button type="button" id="scopebtn">All files</button><div id="scopemenu"></div></div>
+<script>
+(function () {
+  var sel = document.getElementById("scope"), btn = document.getElementById("scopebtn"), menu = document.getElementById("scopemenu");
+  function label() { var o = sel.options[sel.selectedIndex]; btn.textContent = o ? o.textContent : "All files"; }
+  function close() { menu.classList.remove("open"); }
+  function build() {
+    menu.textContent = "";
+    Array.prototype.forEach.call(sel.options, function (o, i) {
+      var b = document.createElement("button"); b.type = "button"; b.textContent = o.textContent; b.title = o.textContent;
+      if (i === sel.selectedIndex) b.className = "sel";
+      b.addEventListener("click", function (e) { e.stopPropagation(); sel.selectedIndex = i; label(); close(); });
+      menu.appendChild(b);
+    });
+    label();
+  }
+  function open() {
+    var r = btn.getBoundingClientRect();
+    menu.style.left = r.left + "px"; menu.style.top = (r.bottom + 6) + "px"; menu.style.minWidth = Math.max(r.width, 220) + "px";
+    build(); menu.classList.add("open");
+  }
+  btn.addEventListener("click", function (e) { e.stopPropagation(); if (menu.classList.contains("open")) close(); else open(); });
+  document.addEventListener("click", close);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+  new MutationObserver(function () { setTimeout(build, 0); }).observe(sel, { childList: true });
+  build();
+})();
+</script>
 <script>
 window.scopeBody = function () { var s = document.getElementById("scope"); return s && s.value ? { document_id: Number(s.value) } : {}; };
-fetch("/documents").then(function (r) { return r.json(); }).then(function (d) { var s = document.getElementById("scope"); (d.items || []).forEach(function (it) { var o = document.createElement("option"); o.value = it.id; o.textContent = it.filename; s.appendChild(o); }); }).catch(function () {});
+window.refreshScopes = function () {
+  fetch("/documents").then(function (r) { return r.json(); }).then(function (d) {
+    var s = document.getElementById("scope"); var keep = s.value;
+    while (s.options.length > 1) s.remove(1);
+    (d.items || []).forEach(function (it) { var o = document.createElement("option"); o.value = it.id; o.textContent = it.filename; s.appendChild(o); });
+    s.value = keep;
+  }).catch(function () {});
+};
+window.refreshScopes();
 </script>
             <button type="button" class="mic" id="mic" title="Search by voice" aria-label="Search by voice"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
             <div class="dd" id="dd">
@@ -487,6 +548,7 @@ fetch("/documents").then(function (r) { return r.json(); }).then(function (d) { 
       statusEl.textContent = d.duplicate
         ? f.name + " was already uploaded."
         : "Uploaded " + d.filename + " (" + d.chunks + " chunks). It needs about a minute to be searchable.";
+      if (window.refreshScopes) window.refreshScopes();
     } catch (err) {
       statusEl.textContent = "Upload failed: " + (err.message || err);
     }
