@@ -132,6 +132,28 @@ Six cases from three problems are too few to rank the modes. Read this as "windo
 
 A load test is in `eval/load_test.py` (1000 lines/s for 60 s, 0 lost in the committed run).
 
+## Measured search quality
+
+Test set: `eval/fixtures/webshop/webshop-incident-day.log` (572 lines, 8 injected failures) with 8 plain-words queries, for example "server disk is full". A query passes when the right log line is in the top 3 results. Searches run over all uploaded files, including an unrelated OpenStack log.
+
+| Change | Top-3 hits (of 8) |
+|---|---|
+| Baseline (hybrid vector + full-text) | 5 |
+| ERROR/WARN level boost | 6 |
+| Redaction fix: plain words after `token:` are no longer hidden | 7 |
+
+- Searching one file only (the "All files / this file" dropdown) scored 7 of 8 when measured before the redaction fix. It has not been re-measured since.
+- The redaction fix mattered because the line `failed to store session token: Redis is out of memory` was stored as `<SECRET> is out of memory`, so no search could find it.
+
+Tried and dropped:
+- Rewriting the query with a free Gemini model: +1 query on this log, but one model call per search, and no gain once the search was limited to one file.
+- Removing filler words from the full-text query: net zero. One query got better and another got worse.
+
+Caveats:
+- Eight queries on one synthetic log is a small sample. Treat the numbers as a regression check, not a general accuracy claim.
+- The level boost changed one result for the demo query "server was deleted" (an unrelated nginx WARN line entered the top 3).
+- The 8 queries are committed as eval cases (`eval/fixtures/cases.jsonl`, source `synthetic`), but the eval has not been run yet because it needs a scratch `_eval` database.
+
 ## Known limitations
 
 - **Full-text search does not stem.** It uses the `simple` Postgres config on purpose, so identifiers like `blk_123` or `nova.virt.libvirt` and words like "not" stay intact. A query using a different word form than the log (`instance` vs `instances`) can lose its vector hit during hybrid fusion. A separate stemmed column would fix this without touching the existing one, but needs more eval cases first.
