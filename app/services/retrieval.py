@@ -32,6 +32,15 @@ logger = logging.getLogger(__name__)
 
 RRF_K = 60
 FINGERPRINT_BOOST = 0.02
+
+# Small nudge so ERROR/WARN lines rank above equally similar INFO lines.
+LEVEL_BOOST = {
+    "ERROR": 0.003,
+    "FATAL": 0.003,
+    "CRITICAL": 0.003,
+    "WARN": 0.0015,
+    "WARNING": 0.0015,
+}
 MAX_QUERY_CHARS = 4000
 MAX_TOKENS = 40
 CANDIDATES = 50
@@ -259,6 +268,7 @@ async def search(
         if hit.fingerprint is not None and hit.fingerprint == fingerprint:
             hit.fingerprint_match = True
             hit.score += FINGERPRINT_BOOST
+        hit.score += LEVEL_BOOST.get((hit.level or "").upper(), 0.0)
 
     passing = [h for h in hits.values() if _passes(h, min_similarity)]
     passing.sort(key=lambda h: (-h.score, h.chunk_id))
