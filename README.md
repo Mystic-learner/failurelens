@@ -98,7 +98,7 @@ Notes:
 
 Copy `.env.example` to `.env`. Every setting is optional and the file lists the defaults.
 
-LLM diagnosis (`POST /diagnose`) currently needs `OPENAI_API_KEY`. Without it the diagnosis runner is disabled and `/diagnose` answers 503. Everything else works without a key.
+LLM diagnosis (`POST /diagnose`) uses any OpenAI-compatible chat API. Set `LLM_API_KEY`, `LLM_BASE_URL` and `LLM_MODEL` in `.env`; the defaults in `.env.example` use Google's free Gemini tier. Without a key the diagnosis runner is disabled and `/diagnose` answers 503. Everything else works without a key.
 
 ## Tests
 
@@ -135,4 +135,4 @@ A load test is in `eval/load_test.py` (1000 lines/s for 60 s, 0 lost in the comm
 ## Known limitations
 
 - **Full-text search does not stem.** It uses the `simple` Postgres config on purpose, so identifiers like `blk_123` or `nova.virt.libvirt` and words like "not" stay intact. A query using a different word form than the log (`instance` vs `instances`) can lose its vector hit during hybrid fusion. A separate stemmed column would fix this without touching the existing one, but needs more eval cases first.
-- **Diagnosis needs an OpenAI key** (see Configuration).
+- **Diagnosis needs an LLM key** (the free Gemini tier works, see Configuration). Without one, incidents still open but show "No diagnosis yet".
