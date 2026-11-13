@@ -213,6 +213,11 @@ PAGE = r"""<!doctype html>
         <div class="box" id="box">
           <div class="inner">
             <input type="text" id="q" placeholder="e.g. instance missing on hypervisor" autocomplete="off" autofocus>
+<select id="scope" title="Search scope"><option value="">All files</option></select>
+<script>
+window.scopeBody = function () { var s = document.getElementById("scope"); return s && s.value ? { document_id: Number(s.value) } : {}; };
+fetch("/documents").then(function (r) { return r.json(); }).then(function (d) { var s = document.getElementById("scope"); (d.items || []).forEach(function (it) { var o = document.createElement("option"); o.value = it.id; o.textContent = it.filename; s.appendChild(o); }); }).catch(function () {});
+</script>
             <button type="button" class="mic" id="mic" title="Search by voice" aria-label="Search by voice"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
             <div class="dd" id="dd">
               <button type="button" class="ddbtn" id="ddbtn" title="Number of results"><span id="kval">8</span></button>
@@ -396,7 +401,7 @@ PAGE = r"""<!doctype html>
       const r = await fetch("/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: sent, top_k: k }),
+        body: JSON.stringify(Object.assign({ query: sent, top_k: k }, window.scopeBody ? window.scopeBody() : {})),
       });
       if (!r.ok) throw new Error(await errorText(r));
       const data = await r.json();

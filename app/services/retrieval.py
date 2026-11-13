@@ -59,6 +59,7 @@ class SearchFilters:
     service: str | None = None
     since: datetime | None = None
     until: datetime | None = None
+    document_id: int | None = None
 
 
 @dataclass
@@ -111,6 +112,8 @@ def rrf_merge(rankings: dict[str, list[int]], k: int = RRF_K) -> dict[int, float
 
 def _filter_sql(filters: SearchFilters) -> str:
     parts = ""
+    if filters.document_id is not None:
+        parts += " AND c.document_id = CAST(:document_id AS bigint)"
     if filters.service is not None:
         parts += " AND c.service = CAST(:service AS text)"
     if filters.since is not None:
@@ -122,6 +125,8 @@ def _filter_sql(filters: SearchFilters) -> str:
 
 def _filter_params(filters: SearchFilters) -> dict[str, object]:
     params: dict[str, object] = {}
+    if filters.document_id is not None:
+        params["document_id"] = filters.document_id
     if filters.service is not None:
         params["service"] = filters.service
     if filters.since is not None:

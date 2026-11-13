@@ -22,6 +22,7 @@ class SearchRequest(BaseModel):
     service: str | None = Field(default=None, max_length=200)
     since: datetime | None = None
     until: datetime | None = None
+    document_id: int | None = Field(default=None, ge=1)
 
 
 class HitOut(BaseModel):
@@ -57,7 +58,7 @@ async def search_endpoint(body: SearchRequest, request: Request) -> SearchRespon
             if body.min_similarity is not None
             else request.app.state.settings.min_similarity
         ),
-        filters=SearchFilters(body.service, body.since, body.until),
+        filters=SearchFilters(body.service, body.since, body.until, body.document_id),
     )
     return SearchResponse(
         hits=[
