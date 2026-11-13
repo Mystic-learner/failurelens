@@ -1,0 +1,572 @@
+2026-11-12 08:00:02.604 INFO  nginx: 68.71.52.174 "GET /api/v1/search?q=4013" 200 36041B 26ms
+2026-11-12 08:00:09.429 INFO  nginx: 70.13.101.184 "GET /api/v1/users/3583" 200 42890B 143ms
+2026-11-12 08:00:13.777 INFO  api-gateway: request 90813747 routed to orders-service in 2ms
+2026-11-12 08:00:16.220 INFO  postgres: checkpoint complete: wrote 5674 buffers (5.6%)
+2026-11-12 08:00:22.549 INFO  nginx: 102.176.135.207 "GET /api/v1/invoices/1585" 200 3147B 121ms
+2026-11-12 08:00:24.565 INFO  cron: job send-digest finished in 11s
+2026-11-12 08:00:29.196 INFO  redis: 40 keys expired in 6ms, used_memory=327MB
+2026-11-12 08:00:31.650 INFO  nginx: 31.119.51.98 "GET /api/v1/products?page=4742" 200 18517B 120ms
+2026-11-12 08:00:37.546 INFO  nginx: 182.136.36.156 "GET /healthz" 200 41913B 47ms
+2026-11-12 08:00:41.841 INFO  nginx: 174.112.166.216 "GET /api/v1/invoices/4423" 200 3965B 62ms
+2026-11-12 08:00:42.216 INFO  redis: 26 keys expired in 5ms, used_memory=196MB
+2026-11-12 08:00:48.762 INFO  nginx: 175.234.73.68 "GET /static/app.js" 200 9450B 67ms
+2026-11-12 08:00:57.438 INFO  api-gateway: request 064c3cbf routed to orders-service in 39ms
+2026-11-12 08:01:04.642 INFO  nginx: 137.46.24.221 "GET /api/v1/cart" 200 7485B 43ms
+2026-11-12 08:01:07.390 INFO  redis: 28 keys expired in 2ms, used_memory=278MB
+2026-11-12 08:01:15.881 INFO  api-gateway: request b99798f8 routed to orders-service in 37ms
+2026-11-12 08:01:16.549 INFO  postgres: checkpoint complete: wrote 1976 buffers (13.6%)
+2026-11-12 08:01:21.445 INFO  redis: 22 keys expired in 2ms, used_memory=255MB
+2026-11-12 08:01:24.995 INFO  api-gateway: request cc472df4 routed to orders-service in 18ms
+2026-11-12 08:01:33.640 INFO  redis: 33 keys expired in 2ms, used_memory=402MB
+2026-11-12 08:01:38.156 INFO  kafka-consumer: committed offset 632323 partition 4 lag=12
+2026-11-12 08:01:44.000 INFO  redis: 35 keys expired in 9ms, used_memory=415MB
+2026-11-12 08:01:50.899 INFO  api-gateway: request fb5ca31c routed to orders-service in 25ms
+2026-11-12 08:01:55.784 INFO  nginx: 31.43.248.209 "GET /api/v1/products?page=9296" 200 4835B 140ms
+2026-11-12 08:01:58.773 INFO  nginx: 53.135.216.247 "GET /static/app.js" 200 14180B 142ms
+2026-11-12 08:02:02.665 INFO  postgres: checkpoint complete: wrote 6637 buffers (19.9%)
+2026-11-12 08:02:08.123 INFO  api-gateway: request b4d97f84 routed to orders-service in 30ms
+2026-11-12 08:02:12.060 INFO  nginx: 161.117.112.2 "GET /healthz" 200 4952B 165ms
+2026-11-12 08:02:16.552 INFO  nginx: 29.121.142.172 "GET /api/v1/orders" 200 32112B 58ms
+2026-11-12 08:02:19.484 INFO  postgres: checkpoint complete: wrote 7844 buffers (4.9%)
+2026-11-12 08:02:26.669 INFO  nginx: 101.216.210.120 "GET /api/v1/users/7063" 200 3850B 176ms
+2026-11-12 08:02:28.432 INFO  nginx: 74.98.97.138 "GET /healthz" 200 29700B 39ms
+2026-11-12 08:02:31.992 INFO  nginx: 124.50.25.167 "GET /api/v1/products?page=1236" 200 35727B 7ms
+2026-11-12 08:02:33.170 WARN  orders-service: slow request 1f44d9 took 1384ms
+2026-11-12 08:02:40.924 INFO  api-gateway: request 8124b836 routed to orders-service in 27ms
+2026-11-12 08:02:41.677 INFO  nginx: 78.232.146.109 "GET /api/v1/orders" 200 45951B 146ms
+2026-11-12 08:02:49.488 INFO  nginx: 25.31.160.15 "GET /api/v1/search?q=3567" 200 3586B 153ms
+2026-11-12 08:02:58.058 WARN  orders-service: slow request e1f787 took 1222ms
+2026-11-12 08:03:07.252 INFO  nginx: 163.34.120.104 "GET /api/v1/cart" 200 8156B 149ms
+2026-11-12 08:03:08.597 INFO  auth-service: user grace logged in from session 9b49a8
+2026-11-12 08:03:17.687 INFO  nginx: 182.160.122.68 "GET /api/v1/search?q=3347" 200 26238B 37ms
+2026-11-12 08:03:22.009 INFO  api-gateway: request 3b25d4ed routed to orders-service in 6ms
+2026-11-12 08:03:30.550 INFO  auth-service: user bob logged in from session 36c112
+2026-11-12 08:03:34.902 INFO  api-gateway: request 68ace821 routed to orders-service in 24ms
+2026-11-12 08:03:36.448 INFO  kafka-consumer: committed offset 487477 partition 2 lag=10
+2026-11-12 08:03:45.836 INFO  postgres: checkpoint complete: wrote 8766 buffers (0.2%)
+2026-11-12 08:03:54.278 INFO  nginx: 78.59.54.191 "GET /api/v1/users/2201" 200 36556B 43ms
+2026-11-12 08:03:59.703 INFO  auth-service: user frank logged in from session f41e34
+2026-11-12 08:04:04.094 INFO  api-gateway: request 717b4940 routed to orders-service in 5ms
+2026-11-12 08:04:11.789 INFO  redis: 3 keys expired in 1ms, used_memory=265MB
+2026-11-12 08:04:14.759 INFO  auth-service: user erin logged in from session 6f5d29
+2026-11-12 08:04:22.009 INFO  auth-service: user grace logged in from session 97978f
+2026-11-12 08:04:24.315 INFO  nginx: 20.189.75.111 "GET /api/v1/cart" 200 8652B 14ms
+2026-11-12 08:04:30.215 INFO  kafka-consumer: committed offset 934794 partition 0 lag=22
+2026-11-12 08:04:34.573 INFO  auth-service: user frank logged in from session b2b5c7
+2026-11-12 08:04:41.885 INFO  cron: job rotate-logs finished in 31s
+2026-11-12 08:04:44.025 INFO  cron: job rotate-logs finished in 53s
+2026-11-12 08:04:47.421 INFO  postgres: checkpoint complete: wrote 5542 buffers (15.6%)
+2026-11-12 08:04:51.312 INFO  nginx: 20.240.113.52 "GET /api/v1/users/6268" 200 30466B 93ms
+2026-11-12 08:04:55.656 INFO  nginx: 95.142.35.248 "GET /api/v1/products?page=6529" 200 18592B 93ms
+2026-11-12 08:04:58.409 ERROR postgres: FATAL: remaining connection slots are reserved for non-replication superuser connections
+2026-11-12 08:05:01.182 WARN  orders-service: slow request 09871d took 1434ms
+2026-11-12 08:05:04.394 INFO  nginx: 197.160.223.156 "GET /api/v1/invoices/5664" 200 33816B 33ms
+2026-11-12 08:05:06.942 INFO  nginx: 144.100.186.111 "GET /api/v1/invoices/28" 200 4885B 174ms
+2026-11-12 08:05:08.638 ERROR orders-service: could not acquire database connection within 5000ms, pool exhausted (40 of 40 in use)
+2026-11-12 08:05:09.682 INFO  postgres: checkpoint complete: wrote 5020 buffers (10.1%)
+2026-11-12 08:05:13.766 INFO  nginx: 43.98.215.171 "GET /api/v1/search?q=9084" 200 25147B 177ms
+2026-11-12 08:05:14.630 ERROR api-gateway: upstream orders-service returned 503, customers cannot place orders
+2026-11-12 08:05:17.311 INFO  api-gateway: request 50036fd5 routed to orders-service in 2ms
+2026-11-12 08:05:20.674 INFO  nginx: 124.226.109.131 "GET /healthz" 200 31310B 47ms
+2026-11-12 08:05:21.025 INFO  nginx: 71.158.115.207 "GET /healthz" 200 13350B 41ms
+2026-11-12 08:05:22.506 INFO  nginx: 127.212.99.184 "GET /static/app.js" 200 45936B 102ms
+2026-11-12 08:05:29.475 INFO  nginx: 119.112.90.206 "GET /api/v1/orders" 200 45907B 136ms
+2026-11-12 08:05:30.136 INFO  auth-service: user bob logged in from session aeda74
+2026-11-12 08:05:38.773 INFO  auth-service: user frank logged in from session cb35f3
+2026-11-12 08:05:46.928 INFO  auth-service: user grace logged in from session 2ea0d4
+2026-11-12 08:05:55.460 INFO  api-gateway: request 8892be28 routed to orders-service in 32ms
+2026-11-12 08:06:00.533 INFO  postgres: checkpoint complete: wrote 4643 buffers (15.3%)
+2026-11-12 08:06:08.079 INFO  auth-service: user erin logged in from session 7d9b70
+2026-11-12 08:06:13.710 INFO  nginx: 149.41.70.39 "GET /healthz" 200 15455B 102ms
+2026-11-12 08:06:16.338 INFO  postgres: checkpoint complete: wrote 1152 buffers (8.3%)
+2026-11-12 08:06:25.852 INFO  api-gateway: request 5ca5f00f routed to orders-service in 15ms
+2026-11-12 08:06:32.771 INFO  nginx: 108.244.3.242 "GET /api/v1/orders" 200 23352B 80ms
+2026-11-12 08:06:39.765 INFO  kafka-consumer: committed offset 976325 partition 3 lag=34
+2026-11-12 08:06:48.279 INFO  redis: 15 keys expired in 8ms, used_memory=236MB
+2026-11-12 08:06:55.684 INFO  api-gateway: request 4c258c63 routed to orders-service in 23ms
+2026-11-12 08:07:02.637 INFO  postgres: checkpoint complete: wrote 7757 buffers (18.4%)
+2026-11-12 08:07:11.887 INFO  nginx: 155.13.42.165 "GET /api/v1/invoices/9698" 200 28389B 38ms
+2026-11-12 08:07:19.284 INFO  nginx: 94.108.232.84 "GET /api/v1/search?q=6212" 200 22418B 101ms
+2026-11-12 08:07:26.799 INFO  nginx: 15.26.179.58 "GET /api/v1/users/7706" 200 42907B 21ms
+2026-11-12 08:07:27.020 INFO  postgres: checkpoint complete: wrote 4151 buffers (4.0%)
+2026-11-12 08:07:30.171 INFO  nginx: 155.111.238.180 "GET /static/app.js" 200 17093B 98ms
+2026-11-12 08:07:32.592 INFO  redis: 11 keys expired in 5ms, used_memory=207MB
+2026-11-12 08:07:33.929 WARN  orders-service: slow request 6a6793 took 2287ms
+2026-11-12 08:07:40.614 INFO  nginx: 162.124.52.179 "GET /api/v1/products?page=1246" 200 20064B 179ms
+2026-11-12 08:07:42.545 INFO  redis: 37 keys expired in 1ms, used_memory=268MB
+2026-11-12 08:07:49.663 INFO  auth-service: user bob logged in from session a58681
+2026-11-12 08:07:55.445 INFO  nginx: 38.221.185.163 "GET /api/v1/invoices/8032" 200 30429B 43ms
+2026-11-12 08:07:58.941 INFO  postgres: checkpoint complete: wrote 4525 buffers (12.3%)
+2026-11-12 08:08:07.748 INFO  redis: 30 keys expired in 7ms, used_memory=391MB
+2026-11-12 08:08:12.624 INFO  nginx: 82.230.124.193 "GET /api/v1/products?page=1420" 200 30755B 149ms
+2026-11-12 08:08:19.286 INFO  nginx: 57.249.108.91 "GET /static/app.js" 200 17231B 91ms
+2026-11-12 08:08:24.247 INFO  auth-service: user dave logged in from session bbea15
+2026-11-12 08:08:31.707 INFO  api-gateway: request 291417c2 routed to orders-service in 17ms
+2026-11-12 08:08:39.811 INFO  auth-service: user heidi logged in from session 91bb72
+2026-11-12 08:08:40.484 INFO  nginx: 188.124.156.170 "GET /api/v1/products?page=6626" 200 38412B 98ms
+2026-11-12 08:08:49.338 INFO  api-gateway: request 5dd1ed6c routed to orders-service in 37ms
+2026-11-12 08:08:55.236 INFO  postgres: checkpoint complete: wrote 4538 buffers (6.1%)
+2026-11-12 08:08:57.548 INFO  postgres: checkpoint complete: wrote 5269 buffers (2.4%)
+2026-11-12 08:09:00.232 INFO  nginx: 196.144.51.214 "GET /static/app.js" 200 13021B 79ms
+2026-11-12 08:09:06.299 INFO  nginx: 43.140.23.250 "GET /api/v1/orders" 200 3873B 145ms
+2026-11-12 08:09:09.893 INFO  auth-service: user heidi logged in from session 2f431a
+2026-11-12 08:09:10.451 INFO  auth-service: user heidi logged in from session 038d7a
+2026-11-12 08:09:16.590 INFO  nginx: 133.58.33.103 "GET /api/v1/orders" 200 32527B 22ms
+2026-11-12 08:09:17.231 INFO  nginx: 74.60.213.156 "GET /api/v1/search?q=1396" 200 39367B 162ms
+2026-11-12 08:09:26.624 INFO  nginx: 161.219.156.146 "GET /static/app.js" 200 40999B 19ms
+2026-11-12 08:09:28.216 WARN  orders-service: slow request 963135 took 2181ms
+2026-11-12 08:09:33.177 INFO  auth-service: user carol logged in from session cd673d
+2026-11-12 08:09:42.723 INFO  nginx: 126.240.149.9 "GET /api/v1/orders" 200 15470B 77ms
+2026-11-12 08:09:47.239 INFO  postgres: checkpoint complete: wrote 7538 buffers (1.4%)
+2026-11-12 08:09:52.117 INFO  redis: 38 keys expired in 4ms, used_memory=288MB
+2026-11-12 08:09:55.230 ERROR redis: OOM command not allowed when used memory > 'maxmemory'
+2026-11-12 08:09:57.073 WARN  orders-service: slow request 199ed3 took 1191ms
+2026-11-12 08:09:58.311 INFO  nginx: 156.147.224.32 "GET /api/v1/search?q=9750" 200 31016B 180ms
+2026-11-12 08:10:02.505 WARN  orders-service: slow request f11e80 took 2005ms
+2026-11-12 08:10:04.082 ERROR auth-service: failed to store session token: Redis is out of memory
+2026-11-12 08:10:05.256 INFO  kafka-consumer: committed offset 870214 partition 2 lag=38
+2026-11-12 08:10:06.452 INFO  nginx: 158.20.89.121 "GET /api/v1/orders" 200 34310B 170ms
+2026-11-12 08:10:09.686 INFO  nginx: 34.240.178.105 "GET /api/v1/invoices/8057" 200 22143B 86ms
+2026-11-12 08:10:10.878 WARN  auth-service: falling back to stateless tokens, users may be logged out unexpectedly
+2026-11-12 08:10:13.678 INFO  api-gateway: request d70ed77e routed to orders-service in 20ms
+2026-11-12 08:10:20.090 INFO  redis: 36 keys expired in 1ms, used_memory=296MB
+2026-11-12 08:10:26.530 INFO  nginx: 142.0.236.106 "GET /api/v1/users/6623" 200 3852B 52ms
+2026-11-12 08:10:32.452 INFO  auth-service: user heidi logged in from session c91aa0
+2026-11-12 08:10:33.818 INFO  nginx: 123.248.62.8 "GET /api/v1/cart" 200 41589B 159ms
+2026-11-12 08:10:37.565 INFO  postgres: checkpoint complete: wrote 5191 buffers (11.0%)
+2026-11-12 08:10:44.521 INFO  nginx: 41.78.255.239 "GET /api/v1/users/7561" 200 47263B 78ms
+2026-11-12 08:10:49.249 INFO  api-gateway: request 9a17857b routed to orders-service in 32ms
+2026-11-12 08:10:57.943 INFO  auth-service: user grace logged in from session d7cb30
+2026-11-12 08:11:06.282 INFO  postgres: checkpoint complete: wrote 2336 buffers (17.3%)
+2026-11-12 08:11:13.551 INFO  nginx: 83.152.250.222 "GET /api/v1/search?q=43" 200 10038B 118ms
+2026-11-12 08:11:21.876 INFO  nginx: 93.96.122.147 "GET /api/v1/invoices/7461" 200 25398B 63ms
+2026-11-12 08:11:28.514 INFO  nginx: 109.77.253.247 "GET /static/app.js" 200 2726B 36ms
+2026-11-12 08:11:34.538 INFO  kafka-consumer: committed offset 986088 partition 3 lag=6
+2026-11-12 08:11:42.638 INFO  nginx: 178.79.38.121 "GET /api/v1/cart" 200 17668B 90ms
+2026-11-12 08:11:49.690 INFO  auth-service: user frank logged in from session 0a33da
+2026-11-12 08:11:58.943 INFO  nginx: 149.18.35.61 "GET /healthz" 200 41663B 179ms
+2026-11-12 08:12:03.100 INFO  cron: job cleanup-sessions finished in 56s
+2026-11-12 08:12:05.925 INFO  api-gateway: request 6a0faab1 routed to orders-service in 21ms
+2026-11-12 08:12:06.421 INFO  nginx: 102.191.220.38 "GET /api/v1/orders" 200 16303B 139ms
+2026-11-12 08:12:09.237 INFO  nginx: 108.123.254.234 "GET /api/v1/users/9986" 200 38517B 40ms
+2026-11-12 08:12:17.682 INFO  auth-service: user heidi logged in from session 175d41
+2026-11-12 08:12:18.161 INFO  kafka-consumer: committed offset 587853 partition 2 lag=34
+2026-11-12 08:12:20.306 INFO  api-gateway: request 09fd7658 routed to orders-service in 39ms
+2026-11-12 08:12:27.203 INFO  postgres: checkpoint complete: wrote 7584 buffers (16.9%)
+2026-11-12 08:12:34.585 INFO  kafka-consumer: committed offset 211834 partition 1 lag=24
+2026-11-12 08:12:40.849 INFO  auth-service: user erin logged in from session d59d05
+2026-11-12 08:12:47.651 INFO  nginx: 138.146.117.156 "GET /api/v1/orders" 200 23389B 60ms
+2026-11-12 08:12:51.099 INFO  auth-service: user carol logged in from session ded4a0
+2026-11-12 08:12:52.765 INFO  nginx: 159.186.67.24 "GET /static/app.js" 200 19640B 87ms
+2026-11-12 08:12:59.764 INFO  nginx: 104.139.84.66 "GET /api/v1/cart" 200 31878B 79ms
+2026-11-12 08:13:05.772 INFO  redis: 30 keys expired in 2ms, used_memory=216MB
+2026-11-12 08:13:09.990 INFO  kafka-consumer: committed offset 859396 partition 5 lag=25
+2026-11-12 08:13:18.268 INFO  nginx: 78.63.232.95 "GET /api/v1/invoices/229" 200 44394B 176ms
+2026-11-12 08:13:25.239 INFO  redis: 24 keys expired in 2ms, used_memory=352MB
+2026-11-12 08:13:33.664 INFO  nginx: 67.32.237.233 "GET /healthz" 200 46245B 81ms
+2026-11-12 08:13:40.138 INFO  nginx: 88.252.59.25 "GET /api/v1/orders" 200 15687B 141ms
+2026-11-12 08:13:47.429 INFO  api-gateway: request 03fca4ab routed to orders-service in 36ms
+2026-11-12 08:13:50.630 INFO  kafka-consumer: committed offset 786735 partition 0 lag=31
+2026-11-12 08:13:57.706 WARN  orders-service: slow request 0c9d47 took 967ms
+2026-11-12 08:14:03.062 INFO  nginx: 103.50.188.140 "GET /static/app.js" 200 42559B 95ms
+2026-11-12 08:14:10.128 INFO  nginx: 34.108.10.13 "GET /api/v1/users/7451" 200 22156B 66ms
+2026-11-12 08:14:14.002 INFO  nginx: 66.119.168.199 "GET /api/v1/products?page=9608" 200 9970B 156ms
+2026-11-12 08:14:19.256 INFO  kafka-consumer: committed offset 251716 partition 1 lag=34
+2026-11-12 08:14:22.178 INFO  nginx: 14.183.121.151 "GET /api/v1/orders" 200 21518B 8ms
+2026-11-12 08:14:27.607 INFO  nginx: 40.32.243.115 "GET /api/v1/invoices/8620" 200 24026B 135ms
+2026-11-12 08:14:29.744 INFO  api-gateway: request 077cb738 routed to orders-service in 4ms
+2026-11-12 08:14:38.729 INFO  nginx: 133.205.218.176 "GET /api/v1/orders" 200 7375B 129ms
+2026-11-12 08:14:46.648 INFO  nginx: 166.75.33.33 "GET /api/v1/users/5278" 200 18323B 163ms
+2026-11-12 08:14:55.543 INFO  postgres: checkpoint complete: wrote 6340 buffers (19.9%)
+2026-11-12 08:15:00.101 INFO  api-gateway: request 1540fd9a routed to orders-service in 29ms
+2026-11-12 08:15:02.440 INFO  kafka-consumer: committed offset 782535 partition 4 lag=13
+2026-11-12 08:15:10.408 INFO  kafka-consumer: committed offset 533914 partition 2 lag=29
+2026-11-12 08:15:17.681 INFO  postgres: checkpoint complete: wrote 5220 buffers (8.5%)
+2026-11-12 08:15:22.762 INFO  nginx: 28.46.43.24 "GET /api/v1/cart" 200 28603B 28ms
+2026-11-12 08:15:28.979 INFO  redis: 36 keys expired in 1ms, used_memory=330MB
+2026-11-12 08:15:37.362 INFO  auth-service: user bob logged in from session c12a69
+2026-11-12 08:15:44.614 INFO  kafka-consumer: committed offset 856086 partition 0 lag=18
+2026-11-12 08:15:49.865 INFO  nginx: 179.246.114.217 "GET /api/v1/products?page=2536" 200 7392B 93ms
+2026-11-12 08:15:58.029 INFO  nginx: 68.219.13.156 "GET /api/v1/search?q=9407" 200 43411B 72ms
+2026-11-12 08:16:01.673 INFO  nginx: 100.3.92.223 "GET /api/v1/search?q=5568" 200 9688B 148ms
+2026-11-12 08:16:08.161 INFO  nginx: 146.110.192.108 "GET /api/v1/orders" 200 30030B 91ms
+2026-11-12 08:16:14.050 INFO  nginx: 163.43.26.40 "GET /healthz" 200 10616B 162ms
+2026-11-12 08:16:16.116 INFO  nginx: 166.226.212.70 "GET /api/v1/invoices/7958" 200 14427B 135ms
+2026-11-12 08:16:22.498 INFO  api-gateway: request 3cd78248 routed to orders-service in 39ms
+2026-11-12 08:16:31.404 INFO  auth-service: user alice logged in from session e57338
+2026-11-12 08:16:32.509 INFO  nginx: 46.130.148.84 "GET /api/v1/search?q=3461" 200 8163B 5ms
+2026-11-12 08:16:39.446 INFO  nginx: 191.117.181.19 "GET /api/v1/invoices/8726" 200 26322B 14ms
+2026-11-12 08:16:40.589 INFO  api-gateway: request c6cdee13 routed to orders-service in 22ms
+2026-11-12 08:16:47.117 INFO  auth-service: user grace logged in from session ab1d4a
+2026-11-12 08:16:54.249 INFO  nginx: 169.235.185.23 "GET /healthz" 200 28920B 31ms
+2026-11-12 08:16:56.603 ERROR nginx: SSL_do_handshake() failed: certificate has expired (SSL routines) while SSL handshaking to upstream payments.internal
+2026-11-12 08:16:57.116 INFO  nginx: 67.170.86.20 "GET /api/v1/search?q=5563" 200 33755B 166ms
+2026-11-12 08:16:59.744 WARN  orders-service: slow request a87059 took 1619ms
+2026-11-12 08:17:02.834 ERROR payments-service: TLS certificate for payments.internal expired on 2026-11-12, refusing outbound charge requests
+2026-11-12 08:17:04.475 INFO  nginx: 55.78.38.46 "GET /api/v1/search?q=3233" 200 41453B 130ms
+2026-11-12 08:17:12.642 INFO  postgres: checkpoint complete: wrote 5395 buffers (17.3%)
+2026-11-12 08:17:18.519 INFO  nginx: 124.155.140.152 "GET /api/v1/users/7683" 200 3981B 94ms
+2026-11-12 08:17:20.629 INFO  nginx: 25.188.146.20 "GET /static/app.js" 200 42548B 27ms
+2026-11-12 08:17:29.154 INFO  nginx: 157.96.164.155 "GET /api/v1/orders" 200 31470B 132ms
+2026-11-12 08:17:30.731 INFO  api-gateway: request 58859bcf routed to orders-service in 23ms
+2026-11-12 08:17:32.253 INFO  api-gateway: request 2bd22c2c routed to orders-service in 4ms
+2026-11-12 08:17:40.381 INFO  cron: job rotate-logs finished in 47s
+2026-11-12 08:17:45.694 INFO  nginx: 24.171.33.85 "GET /healthz" 200 6493B 146ms
+2026-11-12 08:17:52.401 INFO  nginx: 31.72.179.80 "GET /api/v1/cart" 200 43295B 173ms
+2026-11-12 08:17:55.572 INFO  auth-service: user bob logged in from session c2404f
+2026-11-12 08:18:02.130 INFO  auth-service: user frank logged in from session e02cd0
+2026-11-12 08:18:11.349 INFO  nginx: 103.9.185.80 "GET /api/v1/invoices/8332" 200 12113B 58ms
+2026-11-12 08:18:19.038 INFO  nginx: 30.151.51.130 "GET /api/v1/cart" 200 35674B 138ms
+2026-11-12 08:18:25.385 INFO  kafka-consumer: committed offset 748052 partition 1 lag=38
+2026-11-12 08:18:28.992 INFO  nginx: 22.210.186.174 "GET /api/v1/cart" 200 47458B 64ms
+2026-11-12 08:18:36.546 INFO  auth-service: user heidi logged in from session 9de73b
+2026-11-12 08:18:40.514 INFO  nginx: 105.225.236.197 "GET /static/app.js" 200 18766B 101ms
+2026-11-12 08:18:49.820 INFO  api-gateway: request ffa47c29 routed to orders-service in 14ms
+2026-11-12 08:18:52.895 INFO  kafka-consumer: committed offset 154714 partition 5 lag=30
+2026-11-12 08:18:58.866 INFO  auth-service: user bob logged in from session 5f1eb6
+2026-11-12 08:19:07.279 INFO  kafka-consumer: committed offset 398910 partition 0 lag=10
+2026-11-12 08:19:15.093 WARN  orders-service: slow request a4b825 took 1795ms
+2026-11-12 08:19:19.054 INFO  redis: 23 keys expired in 1ms, used_memory=286MB
+2026-11-12 08:19:26.083 INFO  api-gateway: request a7f35b3c routed to orders-service in 26ms
+2026-11-12 08:19:32.939 INFO  nginx: 193.171.74.36 "GET /healthz" 200 2810B 77ms
+2026-11-12 08:19:40.480 INFO  postgres: checkpoint complete: wrote 2373 buffers (15.2%)
+2026-11-12 08:19:48.262 INFO  auth-service: user bob logged in from session 70dd04
+2026-11-12 08:19:52.113 INFO  redis: 36 keys expired in 9ms, used_memory=288MB
+2026-11-12 08:19:57.611 INFO  nginx: 72.214.234.17 "GET /api/v1/users/783" 200 7565B 131ms
+2026-11-12 08:20:06.584 INFO  nginx: 85.219.0.158 "GET /api/v1/products?page=2353" 200 23422B 65ms
+2026-11-12 08:20:13.650 INFO  nginx: 103.34.10.100 "GET /api/v1/users/8577" 200 31110B 15ms
+2026-11-12 08:20:20.365 INFO  cron: job sync-catalog finished in 3s
+2026-11-12 08:20:22.346 INFO  nginx: 199.170.68.12 "GET /api/v1/users/9534" 200 23388B 143ms
+2026-11-12 08:20:25.186 INFO  redis: 30 keys expired in 8ms, used_memory=341MB
+2026-11-12 08:20:28.323 INFO  nginx: 86.103.22.203 "GET /static/app.js" 200 13372B 14ms
+2026-11-12 08:20:33.484 INFO  api-gateway: request 392537fd routed to orders-service in 36ms
+2026-11-12 08:20:38.447 INFO  nginx: 102.24.169.70 "GET /api/v1/products?page=4688" 200 8457B 98ms
+2026-11-12 08:20:45.191 INFO  postgres: checkpoint complete: wrote 6434 buffers (6.8%)
+2026-11-12 08:20:53.531 INFO  postgres: checkpoint complete: wrote 6118 buffers (18.5%)
+2026-11-12 08:20:58.616 INFO  redis: 28 keys expired in 2ms, used_memory=290MB
+2026-11-12 08:20:59.558 ERROR worker-3: write failed: No space left on device while writing /var/log/app/worker.log
+2026-11-12 08:21:02.359 INFO  nginx: 89.228.218.43 "GET /healthz" 200 45504B 117ms
+2026-11-12 08:21:06.372 INFO  nginx: 81.29.38.172 "GET /healthz" 200 42080B 107ms
+2026-11-12 08:21:09.820 ERROR logrotate: error: could not rotate /var/log/app/worker.log, disk is 100% full
+2026-11-12 08:21:11.694 INFO  cron: job rotate-logs finished in 78s
+2026-11-12 08:21:15.619 INFO  nginx: 176.187.185.99 "GET /api/v1/users/3867" 200 37474B 12ms
+2026-11-12 08:21:17.781 INFO  postgres: checkpoint complete: wrote 6177 buffers (7.4%)
+2026-11-12 08:21:18.587 ERROR worker-3: job export-report aborted, could not write temp file
+2026-11-12 08:21:21.935 INFO  nginx: 40.13.95.128 "GET /api/v1/search?q=4090" 200 34230B 103ms
+2026-11-12 08:21:30.873 INFO  nginx: 65.146.251.52 "GET /api/v1/search?q=7312" 200 8337B 38ms
+2026-11-12 08:21:32.089 INFO  api-gateway: request 20d40fe6 routed to orders-service in 30ms
+2026-11-12 08:21:38.555 INFO  auth-service: user bob logged in from session 9ccc8c
+2026-11-12 08:21:43.178 INFO  kafka-consumer: committed offset 992717 partition 1 lag=40
+2026-11-12 08:21:49.811 INFO  api-gateway: request 0f9c111f routed to orders-service in 14ms
+2026-11-12 08:21:52.626 INFO  nginx: 103.188.239.206 "GET /static/app.js" 200 36452B 37ms
+2026-11-12 08:21:54.128 INFO  nginx: 145.210.209.211 "GET /api/v1/invoices/7843" 200 37976B 22ms
+2026-11-12 08:22:00.696 INFO  auth-service: user heidi logged in from session d84077
+2026-11-12 08:22:09.168 INFO  nginx: 121.28.63.133 "GET /api/v1/cart" 200 10328B 81ms
+2026-11-12 08:22:12.979 INFO  nginx: 143.145.40.65 "GET /api/v1/products?page=5670" 200 13164B 166ms
+2026-11-12 08:22:21.737 INFO  nginx: 34.86.78.44 "GET /api/v1/search?q=8741" 200 43470B 163ms
+2026-11-12 08:22:27.083 INFO  kafka-consumer: committed offset 690996 partition 0 lag=1
+2026-11-12 08:22:28.271 WARN  orders-service: slow request b861c5 took 2081ms
+2026-11-12 08:22:32.910 INFO  redis: 27 keys expired in 1ms, used_memory=307MB
+2026-11-12 08:22:41.061 INFO  nginx: 73.207.152.117 "GET /api/v1/search?q=7913" 200 5082B 180ms
+2026-11-12 08:22:44.208 INFO  api-gateway: request d3e1f77b routed to orders-service in 31ms
+2026-11-12 08:22:50.735 INFO  auth-service: user frank logged in from session 498adc
+2026-11-12 08:22:56.133 INFO  postgres: checkpoint complete: wrote 5758 buffers (19.5%)
+2026-11-12 08:23:02.247 INFO  api-gateway: request dbde2e1b routed to orders-service in 22ms
+2026-11-12 08:23:10.428 INFO  nginx: 47.49.25.75 "GET /static/app.js" 200 25475B 161ms
+2026-11-12 08:23:14.956 INFO  cron: job rotate-logs finished in 42s
+2026-11-12 08:23:20.023 INFO  nginx: 142.239.255.226 "GET /api/v1/cart" 200 20520B 131ms
+2026-11-12 08:23:22.989 WARN  orders-service: slow request ce6481 took 1836ms
+2026-11-12 08:23:26.481 INFO  nginx: 23.144.253.153 "GET /healthz" 200 43177B 176ms
+2026-11-12 08:23:31.441 INFO  api-gateway: request de49e0d8 routed to orders-service in 8ms
+2026-11-12 08:23:34.374 INFO  kafka-consumer: committed offset 862847 partition 2 lag=25
+2026-11-12 08:23:35.199 INFO  api-gateway: request 4ffafd91 routed to orders-service in 37ms
+2026-11-12 08:23:41.516 INFO  auth-service: user bob logged in from session c1e762
+2026-11-12 08:23:49.998 INFO  redis: 18 keys expired in 2ms, used_memory=212MB
+2026-11-12 08:23:51.512 INFO  nginx: 104.73.101.155 "GET /healthz" 200 33665B 106ms
+2026-11-12 08:23:52.335 INFO  nginx: 132.233.76.156 "GET /api/v1/cart" 200 34084B 39ms
+2026-11-12 08:23:58.339 INFO  nginx: 97.250.153.122 "GET /api/v1/search?q=9728" 200 1390B 98ms
+2026-11-12 08:24:00.644 INFO  cron: job sync-catalog finished in 89s
+2026-11-12 08:24:01.671 INFO  auth-service: user erin logged in from session f191f7
+2026-11-12 08:24:05.644 INFO  postgres: checkpoint complete: wrote 7971 buffers (3.4%)
+2026-11-12 08:24:12.428 INFO  nginx: 157.56.97.5 "GET /api/v1/products?page=518" 200 29203B 84ms
+2026-11-12 08:24:15.513 INFO  api-gateway: request c63e3234 routed to orders-service in 28ms
+2026-11-12 08:24:23.722 INFO  kafka-consumer: committed offset 871581 partition 5 lag=3
+2026-11-12 08:24:26.678 INFO  api-gateway: request 8546968f routed to orders-service in 22ms
+2026-11-12 08:24:34.470 INFO  api-gateway: request 00175250 routed to orders-service in 13ms
+2026-11-12 08:24:43.571 INFO  nginx: 167.247.98.246 "GET /healthz" 200 16455B 75ms
+2026-11-12 08:24:48.573 INFO  nginx: 191.106.250.82 "GET /api/v1/search?q=4736" 200 31744B 93ms
+2026-11-12 08:24:53.354 INFO  nginx: 99.74.148.11 "GET /api/v1/invoices/6465" 200 19150B 24ms
+2026-11-12 08:25:01.206 INFO  auth-service: user heidi logged in from session d6c736
+2026-11-12 08:25:10.231 INFO  nginx: 38.122.124.13 "GET /api/v1/search?q=2250" 200 44198B 139ms
+2026-11-12 08:25:14.987 INFO  nginx: 194.241.51.175 "GET /api/v1/invoices/5412" 200 9309B 5ms
+2026-11-12 08:25:23.668 INFO  cron: job rotate-logs finished in 53s
+2026-11-12 08:25:31.328 INFO  api-gateway: request e18b0f33 routed to orders-service in 20ms
+2026-11-12 08:25:36.587 INFO  auth-service: user bob logged in from session 0cfda6
+2026-11-12 08:25:40.935 INFO  api-gateway: request 6e3d1eb9 routed to orders-service in 4ms
+2026-11-12 08:25:43.956 INFO  api-gateway: request 27466dd6 routed to orders-service in 13ms
+2026-11-12 08:25:44.190 INFO  cron: job send-digest finished in 64s
+2026-11-12 08:25:49.617 INFO  kafka-consumer: committed offset 109717 partition 2 lag=36
+2026-11-12 08:25:51.465 WARN  orders-service: slow request 51c555 took 1482ms
+2026-11-12 08:26:00.871 INFO  api-gateway: request 708aa6e3 routed to orders-service in 10ms
+2026-11-12 08:26:03.479 ERROR kernel: Out of memory: Killed process 4721 (java) total-vm:9145204kB, anon-rss:7812340kB
+2026-11-12 08:26:05.469 INFO  redis: 22 keys expired in 3ms, used_memory=367MB
+2026-11-12 08:26:08.809 INFO  postgres: checkpoint complete: wrote 330 buffers (14.7%)
+2026-11-12 08:26:10.581 ERROR catalog-service: process exited with code 137, restarting (restart 3 of 5)
+2026-11-12 08:26:12.189 INFO  nginx: 142.167.44.103 "GET /api/v1/invoices/7008" 200 44160B 28ms
+2026-11-12 08:26:14.006 INFO  api-gateway: request b64092ef routed to orders-service in 17ms
+2026-11-12 08:26:17.709 INFO  nginx: 95.154.5.67 "GET /static/app.js" 200 43139B 96ms
+2026-11-12 08:26:21.706 INFO  nginx: 89.81.207.176 "GET /api/v1/users/7626" 200 33233B 83ms
+2026-11-12 08:26:23.629 INFO  auth-service: user erin logged in from session 5b175e
+2026-11-12 08:26:27.934 INFO  nginx: 50.232.191.107 "GET /api/v1/cart" 200 46302B 144ms
+2026-11-12 08:26:35.696 INFO  postgres: checkpoint complete: wrote 3678 buffers (15.2%)
+2026-11-12 08:26:37.079 INFO  api-gateway: request 845a3687 routed to orders-service in 25ms
+2026-11-12 08:26:39.119 INFO  nginx: 148.76.84.84 "GET /api/v1/products?page=9384" 200 34401B 117ms
+2026-11-12 08:26:43.522 INFO  postgres: checkpoint complete: wrote 8108 buffers (1.8%)
+2026-11-12 08:26:51.425 INFO  redis: 30 keys expired in 3ms, used_memory=311MB
+2026-11-12 08:26:59.826 INFO  auth-service: user heidi logged in from session 813aac
+2026-11-12 08:27:04.003 INFO  postgres: checkpoint complete: wrote 6587 buffers (5.1%)
+2026-11-12 08:27:08.352 INFO  auth-service: user alice logged in from session 6e776c
+2026-11-12 08:27:10.956 INFO  api-gateway: request bfe96c0f routed to orders-service in 6ms
+2026-11-12 08:27:18.890 INFO  nginx: 45.215.191.229 "GET /api/v1/invoices/2949" 200 25366B 118ms
+2026-11-12 08:27:25.854 INFO  nginx: 41.91.201.136 "GET /api/v1/cart" 200 8645B 61ms
+2026-11-12 08:27:26.736 INFO  postgres: checkpoint complete: wrote 4988 buffers (9.3%)
+2026-11-12 08:27:35.253 INFO  api-gateway: request 3b431861 routed to orders-service in 16ms
+2026-11-12 08:27:43.629 INFO  nginx: 196.57.16.208 "GET /api/v1/search?q=3089" 200 43566B 111ms
+2026-11-12 08:27:44.250 INFO  nginx: 163.17.228.154 "GET /api/v1/users/1654" 200 44341B 16ms
+2026-11-12 08:27:45.222 INFO  api-gateway: request a6a8fd3b routed to orders-service in 36ms
+2026-11-12 08:27:46.676 INFO  nginx: 198.163.164.61 "GET /api/v1/search?q=3837" 200 20076B 40ms
+2026-11-12 08:27:55.995 INFO  nginx: 26.89.218.143 "GET /api/v1/search?q=4509" 200 32781B 16ms
+2026-11-12 08:28:01.804 WARN  orders-service: slow request 1addab took 1680ms
+2026-11-12 08:28:10.246 INFO  nginx: 49.153.192.48 "GET /api/v1/invoices/6689" 200 35553B 125ms
+2026-11-12 08:28:14.397 INFO  nginx: 25.211.213.143 "GET /api/v1/cart" 200 35033B 38ms
+2026-11-12 08:28:18.052 INFO  nginx: 126.189.47.138 "GET /healthz" 200 47786B 52ms
+2026-11-12 08:28:23.979 INFO  nginx: 59.111.245.54 "GET /api/v1/orders" 200 22121B 81ms
+2026-11-12 08:28:24.329 INFO  nginx: 133.124.104.102 "GET /api/v1/products?page=1923" 200 15984B 145ms
+2026-11-12 08:28:29.779 INFO  nginx: 77.184.254.120 "GET /healthz" 200 6762B 124ms
+2026-11-12 08:28:35.423 WARN  orders-service: slow request 84e65e took 1540ms
+2026-11-12 08:28:36.149 INFO  auth-service: user dave logged in from session b7c2bd
+2026-11-12 08:28:37.853 INFO  nginx: 50.100.168.59 "GET /api/v1/invoices/4837" 200 25193B 149ms
+2026-11-12 08:28:41.263 INFO  api-gateway: request 206394a7 routed to orders-service in 23ms
+2026-11-12 08:28:49.172 INFO  cron: job send-digest finished in 59s
+2026-11-12 08:28:55.049 INFO  nginx: 149.30.17.215 "GET /static/app.js" 200 5171B 175ms
+2026-11-12 08:28:56.069 INFO  api-gateway: request a902b1d7 routed to orders-service in 16ms
+2026-11-12 08:28:59.564 INFO  nginx: 26.247.249.5 "GET /static/app.js" 200 733B 140ms
+2026-11-12 08:29:06.940 INFO  nginx: 84.8.220.207 "GET /api/v1/search?q=8778" 200 12048B 31ms
+2026-11-12 08:29:08.634 INFO  api-gateway: request 3522b03d routed to orders-service in 14ms
+2026-11-12 08:29:17.578 INFO  nginx: 112.40.191.246 "GET /healthz" 200 26909B 121ms
+2026-11-12 08:29:21.700 INFO  cron: job rotate-logs finished in 39s
+2026-11-12 08:29:23.415 INFO  auth-service: user alice logged in from session a6ef17
+2026-11-12 08:29:30.660 INFO  nginx: 174.4.87.22 "GET /static/app.js" 200 33058B 115ms
+2026-11-12 08:29:36.540 INFO  auth-service: user bob logged in from session 0911e5
+2026-11-12 08:29:37.673 INFO  nginx: 22.38.143.231 "GET /static/app.js" 200 35888B 148ms
+2026-11-12 08:29:38.166 INFO  nginx: 64.73.203.238 "GET /healthz" 200 5342B 80ms
+2026-11-12 08:29:41.246 ERROR postgres: deadlock detected: process 2231 waits for ShareLock on transaction 88412, blocked by process 2240
+2026-11-12 08:29:45.773 INFO  postgres: checkpoint complete: wrote 8956 buffers (6.6%)
+2026-11-12 08:29:47.997 INFO  redis: 6 keys expired in 9ms, used_memory=370MB
+2026-11-12 08:29:50.649 INFO  nginx: 30.174.203.249 "GET /api/v1/invoices/3804" 200 21689B 11ms
+2026-11-12 08:29:52.802 ERROR orders-service: transaction rolled back after deadlock while updating inventory for order batch
+2026-11-12 08:29:56.817 INFO  nginx: 58.194.43.198 "GET /api/v1/invoices/7076" 200 40841B 79ms
+2026-11-12 08:29:58.389 INFO  postgres: checkpoint complete: wrote 1444 buffers (5.4%)
+2026-11-12 08:30:01.093 INFO  postgres: checkpoint complete: wrote 5288 buffers (7.2%)
+2026-11-12 08:30:02.779 WARN  orders-service: slow request 35da71 took 1637ms
+2026-11-12 08:30:07.362 INFO  nginx: 121.229.208.27 "GET /api/v1/users/3071" 200 2021B 26ms
+2026-11-12 08:30:16.926 INFO  nginx: 14.149.211.100 "GET /healthz" 200 5850B 147ms
+2026-11-12 08:30:20.389 INFO  auth-service: user carol logged in from session de70af
+2026-11-12 08:30:23.431 INFO  nginx: 137.74.32.43 "GET /api/v1/search?q=4398" 200 28786B 74ms
+2026-11-12 08:30:28.257 INFO  api-gateway: request 591eb113 routed to orders-service in 25ms
+2026-11-12 08:30:32.200 INFO  postgres: checkpoint complete: wrote 8223 buffers (11.9%)
+2026-11-12 08:30:40.342 INFO  nginx: 112.170.194.206 "GET /api/v1/search?q=111" 200 21896B 116ms
+2026-11-12 08:30:47.328 INFO  redis: 39 keys expired in 3ms, used_memory=256MB
+2026-11-12 08:30:51.991 INFO  api-gateway: request d1a2792d routed to orders-service in 27ms
+2026-11-12 08:30:57.116 INFO  nginx: 73.166.192.72 "GET /static/app.js" 200 26051B 97ms
+2026-11-12 08:31:01.786 INFO  auth-service: user carol logged in from session b884ae
+2026-11-12 08:31:10.511 INFO  nginx: 123.149.35.210 "GET /static/app.js" 200 27113B 176ms
+2026-11-12 08:31:13.674 INFO  auth-service: user dave logged in from session bfaf40
+2026-11-12 08:31:16.612 INFO  postgres: checkpoint complete: wrote 6276 buffers (1.5%)
+2026-11-12 08:31:24.037 INFO  auth-service: user grace logged in from session 552c8b
+2026-11-12 08:31:30.936 INFO  postgres: checkpoint complete: wrote 8896 buffers (11.9%)
+2026-11-12 08:31:32.108 INFO  nginx: 53.22.204.248 "GET /api/v1/products?page=5817" 200 22031B 114ms
+2026-11-12 08:31:33.790 INFO  nginx: 143.113.228.96 "GET /api/v1/products?page=8367" 200 25933B 122ms
+2026-11-12 08:31:42.851 INFO  nginx: 37.151.212.236 "GET /api/v1/orders" 200 5926B 33ms
+2026-11-12 08:31:45.739 INFO  nginx: 63.247.178.122 "GET /healthz" 200 6697B 116ms
+2026-11-12 08:31:53.111 INFO  nginx: 192.58.11.218 "GET /api/v1/search?q=733" 200 22783B 169ms
+2026-11-12 08:31:56.528 WARN  orders-service: slow request b890bd took 1399ms
+2026-11-12 08:31:59.436 INFO  auth-service: user frank logged in from session 42528f
+2026-11-12 08:32:07.460 INFO  nginx: 58.221.202.8 "GET /api/v1/invoices/3023" 200 40546B 54ms
+2026-11-12 08:32:14.374 INFO  nginx: 82.32.52.205 "GET /api/v1/products?page=3372" 200 35485B 51ms
+2026-11-12 08:32:20.401 INFO  nginx: 182.250.160.153 "GET /api/v1/users/4299" 200 25769B 160ms
+2026-11-12 08:32:22.120 INFO  nginx: 183.152.43.173 "GET /static/app.js" 200 9078B 84ms
+2026-11-12 08:32:26.588 INFO  nginx: 188.72.198.108 "GET /api/v1/cart" 200 39387B 39ms
+2026-11-12 08:32:33.710 INFO  api-gateway: request 556b967c routed to orders-service in 36ms
+2026-11-12 08:32:36.143 INFO  auth-service: user heidi logged in from session 13f149
+2026-11-12 08:32:39.986 INFO  nginx: 102.4.248.35 "GET /static/app.js" 200 13087B 102ms
+2026-11-12 08:32:48.701 INFO  api-gateway: request 1e58b67e routed to orders-service in 28ms
+2026-11-12 08:32:56.500 INFO  api-gateway: request 2f2603d7 routed to orders-service in 30ms
+2026-11-12 08:32:59.172 INFO  nginx: 85.16.140.58 "GET /api/v1/orders" 200 35532B 77ms
+2026-11-12 08:33:07.523 INFO  auth-service: user heidi logged in from session daba8c
+2026-11-12 08:33:09.556 INFO  auth-service: user erin logged in from session ce6dc6
+2026-11-12 08:33:15.778 INFO  api-gateway: request 59bebcc1 routed to orders-service in 4ms
+2026-11-12 08:33:23.104 INFO  api-gateway: request 3bf161fd routed to orders-service in 29ms
+2026-11-12 08:33:27.214 INFO  nginx: 78.178.44.113 "GET /api/v1/orders" 200 7993B 64ms
+2026-11-12 08:33:33.169 INFO  kafka-consumer: committed offset 739905 partition 5 lag=27
+2026-11-12 08:33:36.359 INFO  redis: 14 keys expired in 1ms, used_memory=325MB
+2026-11-12 08:33:45.921 INFO  nginx: 191.149.148.147 "GET /api/v1/cart" 200 17820B 135ms
+2026-11-12 08:33:47.848 INFO  nginx: 81.64.67.64 "GET /api/v1/invoices/972" 200 9884B 86ms
+2026-11-12 08:33:51.591 INFO  redis: 26 keys expired in 8ms, used_memory=216MB
+2026-11-12 08:33:56.077 INFO  auth-service: user grace logged in from session bab573
+2026-11-12 08:33:58.711 INFO  api-gateway: request 8d0cf3bf routed to orders-service in 19ms
+2026-11-12 08:34:04.595 INFO  api-gateway: request b37bf07c routed to orders-service in 22ms
+2026-11-12 08:34:05.748 INFO  kafka-consumer: committed offset 988319 partition 5 lag=5
+2026-11-12 08:34:13.064 INFO  auth-service: user frank logged in from session 90a0d9
+2026-11-12 08:34:22.560 INFO  nginx: 137.137.165.213 "GET /api/v1/invoices/3471" 200 18885B 90ms
+2026-11-12 08:34:25.351 INFO  auth-service: user heidi logged in from session 44cec9
+2026-11-12 08:34:26.207 INFO  nginx: 42.80.225.117 "GET /static/app.js" 200 344B 113ms
+2026-11-12 08:34:29.095 INFO  kafka-consumer: committed offset 416528 partition 1 lag=17
+2026-11-12 08:34:35.439 INFO  nginx: 24.202.156.186 "GET /healthz" 200 46138B 63ms
+2026-11-12 08:34:37.079 INFO  postgres: checkpoint complete: wrote 117 buffers (4.3%)
+2026-11-12 08:34:40.008 INFO  auth-service: user heidi logged in from session a16002
+2026-11-12 08:34:46.072 INFO  redis: 28 keys expired in 3ms, used_memory=302MB
+2026-11-12 08:34:50.656 INFO  nginx: 91.188.153.36 "GET /api/v1/users/1691" 200 25382B 38ms
+2026-11-12 08:34:53.146 ERROR notify-service: getaddrinfo ENOTFOUND smtp.mailprovider.example: DNS lookup failed
+2026-11-12 08:34:54.359 INFO  auth-service: user carol logged in from session 5baa70
+2026-11-12 08:34:57.218 ERROR notify-service: password reset emails are not being delivered, 214 messages queued
+2026-11-12 08:34:59.453 WARN  orders-service: slow request 28b79d took 2306ms
+2026-11-12 08:35:01.810 INFO  nginx: 42.196.179.247 "GET /api/v1/users/2294" 200 28440B 84ms
+2026-11-12 08:35:03.210 INFO  nginx: 152.145.13.218 "GET /api/v1/users/4066" 200 43449B 81ms
+2026-11-12 08:35:12.401 INFO  auth-service: user dave logged in from session ae72bf
+2026-11-12 08:35:17.395 INFO  auth-service: user dave logged in from session f6b07e
+2026-11-12 08:35:19.430 INFO  nginx: 14.184.162.34 "GET /api/v1/users/8656" 200 25651B 149ms
+2026-11-12 08:35:25.977 INFO  api-gateway: request dcac3a2c routed to orders-service in 32ms
+2026-11-12 08:35:27.518 INFO  nginx: 78.110.20.237 "GET /api/v1/users/226" 200 4262B 105ms
+2026-11-12 08:35:32.718 INFO  auth-service: user grace logged in from session 6d6f6c
+2026-11-12 08:35:39.549 INFO  nginx: 32.158.40.131 "GET /api/v1/cart" 200 13616B 43ms
+2026-11-12 08:35:45.946 INFO  nginx: 189.223.122.15 "GET /api/v1/users/5082" 200 16322B 26ms
+2026-11-12 08:35:52.718 INFO  nginx: 181.89.61.4 "GET /api/v1/orders" 200 46692B 39ms
+2026-11-12 08:35:53.750 INFO  nginx: 143.132.85.96 "GET /healthz" 200 8618B 72ms
+2026-11-12 08:35:55.439 INFO  redis: 2 keys expired in 6ms, used_memory=386MB
+2026-11-12 08:36:00.642 INFO  api-gateway: request 06ab5043 routed to orders-service in 38ms
+2026-11-12 08:36:02.056 INFO  api-gateway: request f099c282 routed to orders-service in 25ms
+2026-11-12 08:36:10.261 INFO  kafka-consumer: committed offset 274987 partition 2 lag=10
+2026-11-12 08:36:12.233 INFO  kafka-consumer: committed offset 806866 partition 5 lag=7
+2026-11-12 08:36:21.953 INFO  nginx: 22.241.186.99 "GET /api/v1/orders" 200 10135B 49ms
+2026-11-12 08:36:22.329 INFO  auth-service: user grace logged in from session d57939
+2026-11-12 08:36:26.277 INFO  api-gateway: request 08ca64b8 routed to orders-service in 22ms
+2026-11-12 08:36:28.689 INFO  auth-service: user bob logged in from session c18580
+2026-11-12 08:36:29.088 INFO  nginx: 28.238.144.199 "GET /api/v1/orders" 200 20661B 87ms
+2026-11-12 08:36:38.298 INFO  api-gateway: request ca7f715e routed to orders-service in 14ms
+2026-11-12 08:36:43.605 INFO  postgres: checkpoint complete: wrote 4074 buffers (9.3%)
+2026-11-12 08:36:51.778 INFO  cron: job rotate-logs finished in 70s
+2026-11-12 08:36:55.777 INFO  nginx: 70.177.4.244 "GET /api/v1/invoices/392" 200 22255B 4ms
+2026-11-12 08:37:02.210 INFO  kafka-consumer: committed offset 862540 partition 2 lag=6
+2026-11-12 08:37:11.984 INFO  cron: job send-digest finished in 63s
+2026-11-12 08:37:12.095 INFO  cron: job rotate-logs finished in 36s
+2026-11-12 08:37:13.422 WARN  orders-service: slow request a1b4e5 took 1964ms
+2026-11-12 08:37:19.594 INFO  api-gateway: request d75576bf routed to orders-service in 7ms
+2026-11-12 08:37:21.076 INFO  api-gateway: request 169120a3 routed to orders-service in 27ms
+2026-11-12 08:37:22.242 INFO  api-gateway: request 4802d7f6 routed to orders-service in 10ms
+2026-11-12 08:37:27.076 INFO  nginx: 190.167.162.116 "GET /healthz" 200 18122B 63ms
+2026-11-12 08:37:31.123 INFO  nginx: 38.84.230.120 "GET /api/v1/users/2547" 200 20880B 108ms
+2026-11-12 08:37:40.161 INFO  nginx: 89.237.135.219 "GET /api/v1/products?page=7405" 200 8158B 27ms
+2026-11-12 08:37:45.855 INFO  redis: 39 keys expired in 1ms, used_memory=235MB
+2026-11-12 08:37:51.974 INFO  nginx: 112.25.153.67 "GET /api/v1/products?page=5829" 200 11694B 11ms
+2026-11-12 08:37:58.255 INFO  kafka-consumer: committed offset 682959 partition 5 lag=35
+2026-11-12 08:38:00.124 INFO  api-gateway: request 6a2dcccd routed to orders-service in 10ms
+2026-11-12 08:38:01.086 INFO  nginx: 61.205.190.176 "GET /api/v1/products?page=2142" 200 41607B 169ms
+2026-11-12 08:38:06.066 WARN  orders-service: slow request 5c3213 took 944ms
+2026-11-12 08:38:10.094 WARN  orders-service: slow request b78471 took 1163ms
+2026-11-12 08:38:16.699 INFO  nginx: 54.221.202.128 "GET /static/app.js" 200 2232B 101ms
+2026-11-12 08:38:23.628 INFO  nginx: 81.143.228.227 "GET /api/v1/products?page=3067" 200 10040B 12ms
+2026-11-12 08:38:27.903 INFO  auth-service: user heidi logged in from session 527869
+2026-11-12 08:38:36.392 INFO  api-gateway: request 65eb7416 routed to orders-service in 19ms
+2026-11-12 08:38:39.255 INFO  api-gateway: request 35e084a4 routed to orders-service in 35ms
+2026-11-12 08:38:48.557 INFO  redis: 25 keys expired in 6ms, used_memory=302MB
+2026-11-12 08:38:56.030 INFO  nginx: 80.92.13.82 "GET /healthz" 200 39432B 60ms
+2026-11-12 08:39:01.246 INFO  nginx: 102.119.81.26 "GET /static/app.js" 200 16543B 172ms
+2026-11-12 08:39:06.782 INFO  api-gateway: request 8c858eca routed to orders-service in 5ms
+2026-11-12 08:39:07.589 ERROR deploy: migration 20261112_add_invoice_status failed: column "status" of relation "invoices" already exists
+2026-11-12 08:39:10.180 WARN  orders-service: slow request b0d5fd took 1255ms
+2026-11-12 08:39:12.605 INFO  auth-service: user frank logged in from session 97fae9
+2026-11-12 08:39:13.720 ERROR deploy: rollout of release v2.14.0 halted, keeping v2.13.2 live
+2026-11-12 08:39:16.576 WARN  orders-service: slow request 834890 took 1191ms
+2026-11-12 08:39:18.179 INFO  redis: 32 keys expired in 9ms, used_memory=259MB
+2026-11-12 08:39:22.339 INFO  nginx: 165.112.10.135 "GET /api/v1/orders" 200 31625B 4ms
+2026-11-12 08:39:26.821 INFO  redis: 22 keys expired in 3ms, used_memory=415MB
+2026-11-12 08:39:32.983 INFO  nginx: 191.72.56.217 "GET /api/v1/cart" 200 34791B 97ms
+2026-11-12 08:39:34.749 INFO  nginx: 36.172.154.83 "GET /api/v1/invoices/9602" 200 9242B 44ms
+2026-11-12 08:39:41.724 INFO  redis: 32 keys expired in 6ms, used_memory=224MB
+2026-11-12 08:39:50.603 INFO  postgres: checkpoint complete: wrote 5946 buffers (4.5%)
+2026-11-12 08:39:53.186 INFO  nginx: 56.0.200.218 "GET /api/v1/search?q=2087" 200 37490B 12ms
+2026-11-12 08:39:59.226 WARN  orders-service: slow request 28b0f7 took 2152ms
+2026-11-12 08:40:01.763 WARN  orders-service: slow request 340124 took 1578ms
+2026-11-12 08:40:03.214 INFO  nginx: 173.45.171.115 "GET /healthz" 200 1046B 71ms
+2026-11-12 08:40:07.110 INFO  postgres: checkpoint complete: wrote 5842 buffers (5.1%)
+2026-11-12 08:40:08.559 INFO  nginx: 53.211.252.226 "GET /static/app.js" 200 25119B 93ms
+2026-11-12 08:40:15.301 INFO  nginx: 177.115.83.116 "GET /static/app.js" 200 5130B 12ms
+2026-11-12 08:40:16.964 INFO  nginx: 98.87.192.42 "GET /api/v1/users/1216" 200 5215B 144ms
+2026-11-12 08:40:18.339 INFO  nginx: 121.84.222.41 "GET /static/app.js" 200 3809B 29ms
+2026-11-12 08:40:22.567 INFO  cron: job send-digest finished in 90s
+2026-11-12 08:40:31.860 INFO  nginx: 71.49.25.101 "GET /api/v1/search?q=4873" 200 37771B 144ms
+2026-11-12 08:40:39.614 INFO  nginx: 120.44.150.211 "GET /healthz" 200 43686B 164ms
+2026-11-12 08:40:47.803 INFO  nginx: 54.149.41.122 "GET /api/v1/orders" 200 7869B 82ms
+2026-11-12 08:40:54.093 INFO  api-gateway: request d4b016e5 routed to orders-service in 18ms
+2026-11-12 08:41:03.476 INFO  nginx: 105.95.228.12 "GET /healthz" 200 17555B 116ms
+2026-11-12 08:41:08.827 INFO  nginx: 26.77.49.22 "GET /api/v1/search?q=9245" 200 44087B 92ms
+2026-11-12 08:41:17.232 INFO  api-gateway: request 8328a7c1 routed to orders-service in 39ms
+2026-11-12 08:41:26.404 INFO  nginx: 118.243.120.122 "GET /api/v1/invoices/8562" 200 19885B 24ms
+2026-11-12 08:41:27.819 INFO  api-gateway: request 0c3984e6 routed to orders-service in 35ms
+2026-11-12 08:41:30.080 INFO  nginx: 53.108.98.33 "GET /static/app.js" 200 3096B 112ms
+2026-11-12 08:41:37.406 INFO  nginx: 77.163.34.23 "GET /api/v1/cart" 200 25734B 146ms
+2026-11-12 08:41:46.151 INFO  nginx: 128.6.214.29 "GET /api/v1/search?q=8515" 200 27460B 42ms
+2026-11-12 08:41:48.804 WARN  orders-service: slow request 0a0c90 took 1106ms
+2026-11-12 08:41:53.392 INFO  kafka-consumer: committed offset 460572 partition 3 lag=16
+2026-11-12 08:42:01.176 INFO  auth-service: user heidi logged in from session 599709
+2026-11-12 08:42:06.697 INFO  api-gateway: request 5e45459e routed to orders-service in 40ms
+2026-11-12 08:42:13.345 INFO  nginx: 23.243.137.230 "GET /healthz" 200 24708B 9ms
+2026-11-12 08:42:18.275 INFO  nginx: 69.68.153.250 "GET /static/app.js" 200 29339B 86ms
+2026-11-12 08:42:25.452 INFO  auth-service: user bob logged in from session 8d1c30
+2026-11-12 08:42:29.777 WARN  orders-service: slow request 513c68 took 1892ms
+2026-11-12 08:42:38.810 INFO  kafka-consumer: committed offset 960899 partition 0 lag=32
+2026-11-12 08:42:41.255 INFO  nginx: 145.14.88.50 "GET /api/v1/invoices/2223" 200 13454B 18ms
+2026-11-12 08:42:42.721 INFO  api-gateway: request 9c1504eb routed to orders-service in 25ms
+2026-11-12 08:42:46.608 INFO  nginx: 112.63.15.62 "GET /static/app.js" 200 24709B 129ms
+2026-11-12 08:42:54.092 INFO  nginx: 152.179.176.42 "GET /static/app.js" 200 17251B 180ms
+2026-11-12 08:42:59.211 INFO  nginx: 157.109.113.166 "GET /api/v1/orders" 200 15052B 177ms
+2026-11-12 08:43:04.799 INFO  auth-service: user alice logged in from session 6358dd
+2026-11-12 08:43:05.615 INFO  api-gateway: request 0956df21 routed to orders-service in 13ms
+2026-11-12 08:43:06.477 INFO  nginx: 119.192.178.118 "GET /api/v1/search?q=4512" 200 16814B 59ms
+2026-11-12 08:43:11.007 INFO  postgres: checkpoint complete: wrote 6606 buffers (11.7%)
+2026-11-12 08:43:20.662 INFO  cron: job sync-catalog finished in 72s
+2026-11-12 08:43:25.267 INFO  nginx: 27.172.141.164 "GET /api/v1/users/7893" 200 21608B 74ms
+2026-11-12 08:43:30.671 INFO  nginx: 164.206.163.175 "GET /api/v1/products?page=931" 200 9470B 10ms
+2026-11-12 08:43:38.414 INFO  cron: job sync-catalog finished in 54s
+2026-11-12 08:43:45.730 INFO  postgres: checkpoint complete: wrote 3211 buffers (6.9%)
+2026-11-12 08:43:49.687 INFO  postgres: checkpoint complete: wrote 7894 buffers (18.1%)
+2026-11-12 08:43:55.860 INFO  api-gateway: request 5d656dd8 routed to orders-service in 12ms
+2026-11-12 08:44:04.670 INFO  nginx: 43.132.93.243 "GET /api/v1/users/7714" 200 44845B 89ms
+2026-11-12 08:44:06.474 INFO  nginx: 118.169.190.67 "GET /api/v1/products?page=5032" 200 38675B 79ms
+2026-11-12 08:44:08.594 INFO  api-gateway: request bcf4cbdd routed to orders-service in 39ms
+2026-11-12 08:44:10.122 INFO  api-gateway: request 6e9fcd31 routed to orders-service in 34ms
+2026-11-12 08:44:17.891 INFO  api-gateway: request ae65c169 routed to orders-service in 5ms
+2026-11-12 08:44:20.797 INFO  nginx: 115.234.73.81 "GET /api/v1/products?page=5615" 200 47202B 50ms
+2026-11-12 08:44:22.320 INFO  api-gateway: request 155d8ba1 routed to orders-service in 13ms
+2026-11-12 08:44:23.629 INFO  nginx: 54.81.250.202 "GET /api/v1/search?q=3431" 200 6069B 37ms
+2026-11-12 08:44:30.988 INFO  auth-service: user grace logged in from session 9cd46d
+2026-11-12 08:44:38.195 INFO  nginx: 62.191.7.229 "GET /api/v1/orders" 200 21416B 139ms
+2026-11-12 08:44:39.898 INFO  postgres: checkpoint complete: wrote 4176 buffers (4.5%)
+2026-11-12 08:44:45.971 INFO  nginx: 139.156.85.17 "GET /api/v1/users/6285" 200 3296B 80ms
+2026-11-12 08:44:50.536 INFO  api-gateway: request 0f9f3185 routed to orders-service in 40ms
+2026-11-12 08:44:56.350 INFO  api-gateway: request f7d2d0af routed to orders-service in 10ms
+2026-11-12 08:45:04.216 INFO  nginx: 114.9.116.58 "GET /api/v1/products?page=2702" 200 47955B 37ms
+2026-11-12 08:45:05.375 INFO  auth-service: user carol logged in from session 8b871f
+2026-11-12 08:45:06.856 INFO  nginx: 170.24.24.170 "GET /api/v1/search?q=8762" 200 7385B 171ms
+2026-11-12 08:45:07.718 INFO  nginx: 124.194.63.141 "GET /api/v1/users/6829" 200 16863B 125ms
+2026-11-12 08:45:10.428 INFO  nginx: 118.51.138.160 "GET /api/v1/orders" 200 39990B 39ms
+2026-11-12 08:45:12.289 INFO  api-gateway: request 1f74219e routed to orders-service in 9ms
+2026-11-12 08:45:14.204 INFO  redis: 32 keys expired in 4ms, used_memory=335MB
+2026-11-12 08:45:19.419 INFO  redis: 13 keys expired in 6ms, used_memory=360MB
+2026-11-12 08:45:24.687 INFO  nginx: 187.246.169.61 "GET /static/app.js" 200 479B 7ms
+2026-11-12 08:45:26.685 WARN  orders-service: slow request c6d1d5 took 2075ms
+2026-11-12 08:45:34.303 INFO  nginx: 30.51.131.165 "GET /api/v1/users/8384" 200 15449B 120ms
+2026-11-12 08:45:39.895 INFO  api-gateway: request a4138d19 routed to orders-service in 13ms
+2026-11-12 08:45:40.436 INFO  kafka-consumer: committed offset 477712 partition 5 lag=20
+2026-11-12 08:45:42.274 INFO  nginx: 46.87.168.92 "GET /api/v1/orders" 200 28986B 163ms

@@ -24,7 +24,7 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
-Source = Literal["loghub-hdfs", "loghub-openstack", "replayed", "inconclusive"]
+Source = Literal["loghub-hdfs", "loghub-openstack", "replayed", "synthetic", "inconclusive"]
 Scoring = Literal["retrieval", "full"]
 
 LABELLESS_SOURCES = frozenset({"loghub-hdfs", "loghub-openstack"})
