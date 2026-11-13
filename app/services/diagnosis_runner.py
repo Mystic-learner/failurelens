@@ -22,16 +22,27 @@ from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
 
 from app.services.diagnosis import DiagnosisOutcome, EvidenceChunk, LLMClient, diagnose
 from app.services.llm_budget import estimate_tokens, hour_start, reserve, settle
-from app.services.retrieval import Hit, SearchResult
+from app.services.retrieval import Hit, SearchFilters, SearchResult
 
 logger = logging.getLogger(__name__)
 
-Searcher = Callable[[str], Awaitable[SearchResult]]
+Searcher = Callable[[str, SearchFilters | None], Awaitable[SearchResult]]
+# Evidence comes from the incident's own service, this far around the exemplar line.
+EVIDENCE_WINDOW = timedelta(minutes=15)
 Clock = Callable[[], datetime]
 
 
 def _utcnow() -> datetime:
     return datetime.now(UTC)
+
+
+def _evidence_filters(service: object, ts: object) -> SearchFilters | None:
+    """Scope evidence to one service and a window around the exemplar line."""
+    if service is None or not isinstance(ts, datetime):
+        return None
+    return SearchFilters(
+        service=str(service), since=ts - EVIDENCE_WINDOW, until=ts + EVIDENCE_WINDOW
+    )
 
 
 @dataclass(frozen=True)
@@ -80,7 +91,8 @@ _SQL_CLAIM = text(
     """
 )
 _SQL_EXEMPLAR = text(
-    "SELECT c.text FROM signatures s LEFT JOIN chunks c ON c.id = s.exemplar_chunk_id "
+    "SELECT c.text, c.service, c.ts FROM signatures s "
+    "LEFT JOIN chunks c ON c.id = s.exemplar_chunk_id "
     "WHERE s.id = CAST(:sid AS bigint)"
 )
 _SQL_KNOWN = text(
@@ -153,8 +165,10 @@ class DiagnosisRunner:
         """Retrieval + budget + diagnosis for pasted text (used by POST /diagnose)."""
         return await self._core(query, known_ids or [])
 
-    async def _core(self, query: str, known_ids: list[str]) -> CoreResult:
-        found = await self._searcher(query)
+    async def _core(
+        self, query: str, known_ids: list[str], filters: SearchFilters | None = None
+    ) -> CoreResult:
+        found = await self._searcher(query, filters)
         chunks = [EvidenceChunk(str(h.chunk_id), h.text) for h in found.hits]
         if found.inconclusive or not chunks:
             out = await diagnose(
@@ -244,6 +258,7 @@ class DiagnosisRunner:
                 ).all()
             ]
         query = str(row[0]) if row is not None and row[0] is not None else ""
+        filters = _evidence_filters(row[1], row[2]) if row is not None else None
         if not query.strip():
             core = CoreResult(
                 DiagnosisOutcome(status="inconclusive", result=None),
@@ -252,7 +267,7 @@ class DiagnosisRunner:
                 "no exemplar chunk for signature",
             )
         else:
-            core = await self._core(query, known)
+            core = await self._core(query, known, filters)
         if core.outcome is None:
             async with self._engine.begin() as conn:
                 await conn.execute(_SQL_DEFER, {"id": incident_id, "now": now})

@@ -52,7 +52,7 @@ def reply(quote: str = FIRST_LINE, confidence: str = "high") -> str:
 
 
 def make_searcher(inconclusive: bool = False, body: str = HIT_TEXT) -> Any:
-    async def searcher(query: str) -> SearchResult:
+    async def searcher(query: str, filters: Any = None) -> SearchResult:
         hits = [] if inconclusive else [Hit(1, body, "svc", "ERROR", None, None)]
         return SearchResult(
             hits=hits,

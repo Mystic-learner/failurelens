@@ -64,8 +64,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         engine = app.state.engine
         provider = app.state.embedding_provider
 
-        async def searcher(query: str) -> retrieval.SearchResult:
-            return await retrieval.search(engine, provider, query)
+        async def searcher(
+            query: str, filters: retrieval.SearchFilters | None = None
+        ) -> retrieval.SearchResult:
+            return await retrieval.search(engine, provider, query, filters=filters)
 
         runner = DiagnosisRunner(
             engine, llm, searcher, RunnerConfig(hourly_token_cap=settings.llm_hourly_token_cap)
