@@ -348,8 +348,7 @@ async function pageDemo() {
     result.replaceChildren();
     con.replaceChildren();
     const sc = SCEN[n % SCEN.length];
-    const round = Math.floor(n / SCEN.length);
-    const svc = sc.svc + (round ? "-" + (round + 1) : "");
+    const svc = sc.svc + "-" + Date.now().toString(36).slice(-5);
     n += 1;
     try { localStorage.setItem("fl_demo_n", String(n)); } catch (e) { /* ignore */ }
     const src = "demo-" + Date.now().toString(36);
