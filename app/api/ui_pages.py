@@ -77,6 +77,7 @@ PAGE = r"""<!doctype html>
   @media (max-width: 600px) { .row { flex-wrap: wrap; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
+<script src="/ui/auth.js"></script>
 </head>
 <body>
 <div class="bg"><i class="fl-grid"></i><i class="fl-scan"></i></div>

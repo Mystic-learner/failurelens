@@ -15,6 +15,7 @@ import argparse
 import asyncio
 import json
 import math
+import os
 import re
 import sys
 import time
@@ -112,7 +113,11 @@ async def run(args: argparse.Namespace) -> int:
     tasks = [asyncio.create_task(poll_markers(poll_conn, service, since, stop, seen))]
     tasks.append(asyncio.create_task(poll_memory(args.container, stop, peaks)))
 
-    async with httpx.AsyncClient(base_url=args.url, timeout=30.0) as http:
+    async with httpx.AsyncClient(
+        base_url=args.url,
+        timeout=30.0,
+        headers={"X-API-Key": os.environ.get("FAILURELENS_API_KEY", "")},
+    ) as http:
 
         async def send(i: int, t_due: float) -> None:
             await asyncio.sleep(max(0.0, t_due - time.monotonic()))

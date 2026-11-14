@@ -140,10 +140,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(metrics.router, dependencies=guard)
     app.include_router(documents.router, dependencies=guard)
     from app.api import ui as ui_page
-    from app.api import ui_pages
+    from app.api import ui_auth, ui_pages
 
     app.include_router(ui_page.router)
     app.include_router(ui_pages.router)
+    app.include_router(ui_auth.router)
     return app
 
 

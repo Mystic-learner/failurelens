@@ -11,6 +11,7 @@ everything in that case.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import Literal
 
@@ -37,10 +38,15 @@ class IngestClient:
         *,
         http: httpx.AsyncClient | None = None,
         timeout_s: float = 10.0,
+        api_key: str | None = None,
     ) -> None:
         self._service = service
         self._source_id = source_id
-        self._http = http or httpx.AsyncClient(base_url=base_url.rstrip("/"), timeout=timeout_s)
+        key = api_key or os.environ.get("FAILURELENS_API_KEY")
+        headers = {"X-API-Key": key} if key else {}
+        self._http = http or httpx.AsyncClient(
+            base_url=base_url.rstrip("/"), timeout=timeout_s, headers=headers
+        )
 
     async def aclose(self) -> None:
         await self._http.aclose()

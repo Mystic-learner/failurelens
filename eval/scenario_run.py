@@ -7,6 +7,7 @@ Each run uses fresh service names, so it adds about 10 incidents and uses LLM to
 from __future__ import annotations
 
 import argparse
+import os
 import statistics
 import time
 import uuid
@@ -210,7 +211,11 @@ def main() -> int:
     expected = {f"{s['svc']}-{tag}": s for s in chosen[args.set]}
     t0 = time.time()
     found: dict[int, tuple[dict, float]] = {}
-    with httpx.Client(base_url=args.base, timeout=30) as client:
+    with httpx.Client(
+        base_url=args.base,
+        timeout=30,
+        headers={"X-API-Key": os.environ.get("FAILURELENS_API_KEY", "")},
+    ) as client:
         for i, (svc, sc) in enumerate(expected.items()):
             replay(client, svc, f"eval-{tag}-{i}", sc, tag)
         sent_s = time.time() - t0

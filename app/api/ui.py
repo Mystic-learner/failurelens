@@ -192,6 +192,7 @@ PAGE = r"""<!doctype html>
     *, *::before, *::after { animation: none !important; transition: none !important; }
   }
 </style>
+<script src="/ui/auth.js"></script>
 </head>
 <body>
   <div class="bg">
