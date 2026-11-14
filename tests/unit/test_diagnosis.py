@@ -220,3 +220,23 @@ async def test_openai_400_is_permanent() -> None:
     llm = _openai_client(httpx.MockTransport(lambda r: httpx.Response(401)))
     with pytest.raises(PermanentLLMError):
         await llm.complete("s", "u")
+
+
+@pytest.mark.asyncio
+async def test_model_declared_inconclusive_hides_cause_and_evidence() -> None:
+    llm = FakeLLM([reply([GOOD_QUOTE], confidence="inconclusive")])
+    out = await diagnose(llm, "q", [CHUNK_A], sleep=no_sleep)
+    assert out.status == "inconclusive"
+    assert out.result is not None
+    assert out.result.root_cause == INCONCLUSIVE_ROOT_CAUSE
+    assert out.result.confidence == "inconclusive"
+    assert out.result.evidence == []
+    assert out.result.suggested_fix == ""
+
+
+@pytest.mark.asyncio
+async def test_model_declared_inconclusive_keeps_next_checks() -> None:
+    llm = FakeLLM([reply([GOOD_QUOTE], confidence="inconclusive")])
+    out = await diagnose(llm, "q", [CHUNK_A], sleep=no_sleep)
+    assert out.result is not None
+    assert out.result.next_checks == ["Check DB load"]
