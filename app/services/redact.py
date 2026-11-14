@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
 
 _BEARER = re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]+")
@@ -13,8 +14,13 @@ _KV = re.compile(
 )
 _EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 _IPV4 = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
-_CARD = re.compile(r"\b(?:\d[ -]?){13,19}\b")
-_LONG_TOKEN = re.compile(r"\b[A-Za-z0-9+/_-]{32,}")
+_CARD = re.compile(r"(?<![\w-])(?:[3-6]\d{3}(?:[ -]\d{4}){3}|[3-6]\d{12,18})(?![\w-])")
+_LONG_TOKEN = re.compile(r"\b[A-Za-z0-9_-]{32,}")
+
+
+def _token_sub(m: re.Match[str]) -> str:
+    tag = hashlib.sha256(m.group().encode("utf-8")).hexdigest()[:4]
+    return f"[REDACTED_TOKEN#{tag}]"
 
 
 def _luhn(digits: str) -> bool:
@@ -45,5 +51,5 @@ def redact(text: str) -> str:
     text = _EMAIL.sub("[REDACTED_EMAIL]", text)
     text = _IPV4.sub("[REDACTED_IP]", text)
     text = _CARD.sub(_card_sub, text)
-    text = _LONG_TOKEN.sub("[REDACTED_TOKEN]", text)
+    text = _LONG_TOKEN.sub(_token_sub, text)
     return text

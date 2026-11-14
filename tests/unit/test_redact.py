@@ -42,3 +42,33 @@ def test_ordinary_log_lines_unchanged() -> None:
 def test_line_count_preserved() -> None:
     text = "a@b.com\nplain\n10.0.0.1"
     assert len(redact(text).splitlines()) == 3
+
+
+def test_card_rule_ignores_block_ids_and_timestamps() -> None:
+    head = "081109 203807 222 INFO dfs.DataNode$PacketResponder: "
+    for i in range(100):
+        line = head + "PacketResponder 0 for block blk_-66709586223689879" + f"{i:02d} terminating"
+        assert redact(line) == line
+    for n in range(1000):
+        line = f"081109 204{n:03d} 34 INFO dfs.FSNamesystem: BLOCK* NameSystem.addStoredBlock: ok"
+        assert redact(line) == line
+
+
+def test_card_still_matches_contiguous_and_grouped() -> None:
+    assert "[REDACTED_CARD]" in redact("card=4111111111111111 declined")
+    assert "[REDACTED_CARD]" in redact("charge 4111-1111-1111-1111 declined")
+
+
+def test_long_token_keeps_path_and_distinct_ids() -> None:
+    a = "54fadb412c4e40cdbaed9335e4c35a9e"
+    b = "0a1b2c3d4e5f60718293a4b5c6d7e8f9"
+    out = redact(f"GET /v2/{a}/servers/detail HTTP/1.1 id {a} other {b}")
+    assert "/v2/[REDACTED_TOKEN#" in out and "/servers/detail" in out
+    assert a not in out and b not in out
+    ta, tb = redact(a), redact(b)
+    assert ta != tb and out.count(ta) == 2 and out.count(tb) == 1
+
+
+def test_long_token_keeps_filesystem_path() -> None:
+    out = redact("image x at (/var/lib/nova/instances/_base/" + "9f" * 20 + "): checking")
+    assert "/var/lib/nova/instances/_base/[REDACTED_TOKEN#" in out
