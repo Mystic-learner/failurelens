@@ -70,7 +70,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             return await retrieval.search(engine, provider, query, filters=filters)
 
         runner = DiagnosisRunner(
-            engine, llm, searcher, RunnerConfig(hourly_token_cap=settings.llm_hourly_token_cap)
+            engine,
+            llm,
+            searcher,
+            RunnerConfig.for_ingest(
+                hourly_token_cap=settings.llm_hourly_token_cap,
+                idle_s=settings.stream_idle_s,
+                flush_interval_s=settings.worker_flush_interval_s,
+            ),
         )
         app.state.diagnosis_runner = runner
         app.state.diagnosis_llm = llm

@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import math
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
@@ -21,7 +22,11 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
 
 from app.services.diagnosis import DiagnosisOutcome, EvidenceChunk, LLMClient, diagnose
-from app.services.evidence_context import fetch_before, merge_context
+from app.services.evidence_context import (
+    fetch_before,
+    fetch_other_services,
+    merge_context,
+)
 from app.services.llm_budget import estimate_tokens, hour_start, reserve, settle
 from app.services.redact import redact
 from app.services.retrieval import Hit, SearchFilters, SearchResult
@@ -60,6 +65,16 @@ class RunnerConfig:
             raise ValueError("hourly_token_cap and max_attempts must be positive")
         if self.debounce_s < 0 or self.settle_s < 0 or self.stale_s < 0:
             raise ValueError("durations must be >= 0")
+
+    @classmethod
+    def for_ingest(
+        cls, *, hourly_token_cap: int, idle_s: float, flush_interval_s: float
+    ) -> RunnerConfig:
+        """Settle long enough for a quiet stream's last line to be flushed and stored."""
+        return cls(
+            hourly_token_cap=hourly_token_cap,
+            settle_s=math.ceil(idle_s + flush_interval_s) + 1,
+        )
 
 
 @dataclass
@@ -184,6 +199,8 @@ class DiagnosisRunner:
             return CoreResult(out, False, found.degraded, found.reason, found.hits)
         if context is not None:
             chunks = merge_context(chunks, await fetch_before(self._engine, *context))
+            other = await fetch_other_services(self._engine, context[0], context[1], query)
+            chunks = merge_context(chunks, other)
         # Nothing leaves for the LLM unredacted; evidence is verified against these copies.
         chunks = [EvidenceChunk(c.chunk_id, redact(c.text)) for c in chunks]
         llm_query = redact(found.query)
