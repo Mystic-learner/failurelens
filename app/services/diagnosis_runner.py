@@ -21,6 +21,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
 
 from app.services.diagnosis import DiagnosisOutcome, EvidenceChunk, LLMClient, diagnose
+from app.services.evidence_context import fetch_before, merge_context
 from app.services.llm_budget import estimate_tokens, hour_start, reserve, settle
 from app.services.retrieval import Hit, SearchFilters, SearchResult
 
@@ -91,7 +92,8 @@ _SQL_CLAIM = text(
     """
 )
 _SQL_EXEMPLAR = text(
-    "SELECT c.text, c.service, c.ts FROM signatures s "
+    "SELECT c.text, c.service, c.ts, s.exemplar_chunk_id, s.fingerprint "
+    "FROM signatures s "
     "LEFT JOIN chunks c ON c.id = s.exemplar_chunk_id "
     "WHERE s.id = CAST(:sid AS bigint)"
 )
@@ -166,7 +168,11 @@ class DiagnosisRunner:
         return await self._core(query, known_ids or [])
 
     async def _core(
-        self, query: str, known_ids: list[str], filters: SearchFilters | None = None
+        self,
+        query: str,
+        known_ids: list[str],
+        filters: SearchFilters | None = None,
+        context: tuple[str, datetime, int | None, str | None] | None = None,
     ) -> CoreResult:
         found = await self._searcher(query, filters)
         chunks = [EvidenceChunk(str(h.chunk_id), h.text) for h in found.hits]
@@ -175,6 +181,8 @@ class DiagnosisRunner:
                 self._llm, found.query, chunks, known_ids, retrieval_inconclusive=True
             )
             return CoreResult(out, False, found.degraded, found.reason, found.hits)
+        if context is not None:
+            chunks = merge_context(chunks, await fetch_before(self._engine, *context))
         now = self._clock()
         hour = hour_start(now)
         est = estimate_tokens(len(found.query) + sum(len(c.text) for c in chunks))
@@ -259,6 +267,11 @@ class DiagnosisRunner:
             ]
         query = str(row[0]) if row is not None and row[0] is not None else ""
         filters = _evidence_filters(row[1], row[2]) if row is not None else None
+        context = (
+            (str(row[1]), row[2], row[3], row[4])
+            if row is not None and row[1] is not None and isinstance(row[2], datetime)
+            else None
+        )
         if not query.strip():
             core = CoreResult(
                 DiagnosisOutcome(status="inconclusive", result=None),
@@ -267,7 +280,7 @@ class DiagnosisRunner:
                 "no exemplar chunk for signature",
             )
         else:
-            core = await self._core(query, known, filters)
+            core = await self._core(query, known, filters, context)
         if core.outcome is None:
             async with self._engine.begin() as conn:
                 await conn.execute(_SQL_DEFER, {"id": incident_id, "now": now})
