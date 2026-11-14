@@ -80,6 +80,10 @@ SYSTEM_PROMPT = (
     "3. similar_incidents may only contain ids from the provided KNOWN_INCIDENT_IDS list.\n"
     "4. If the evidence does not support a cause, set confidence to 'inconclusive', leave "
     "evidence empty, and put the things to check in next_checks. Never guess.\n"
+    "4b. Restating the error is not a root cause. If the chunks only show the failure "
+    "itself (for example a service returning an empty or unexpected response) and no earlier "
+    "line explains WHY, such as a config change, deploy, resource limit or expired "
+    "credential, answer 'inconclusive'.\n"
     "5. Reply with JSON only, matching the schema."
 )
 
