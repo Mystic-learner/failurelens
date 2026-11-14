@@ -80,10 +80,16 @@ SYSTEM_PROMPT = (
     "3. similar_incidents may only contain ids from the provided KNOWN_INCIDENT_IDS list.\n"
     "4. If the evidence does not support a cause, set confidence to 'inconclusive', leave "
     "evidence empty, and put the things to check in next_checks. Never guess.\n"
-    "4b. Restating the error is not a root cause. If the chunks only show the failure "
-    "itself (for example a service returning an empty or unexpected response) and no earlier "
-    "line explains WHY, such as a config change, deploy, resource limit or expired "
-    "credential, answer 'inconclusive'.\n"
+    "4b. Restating the error is not a root cause. A root cause names a concrete mechanism: "
+    "a resource that ran out, a config, flag or deploy change, an expired credential, or a "
+    "dependency that is timing out, unavailable, unreachable or refusing connections. The "
+    "mechanism may appear in the error line itself or in an earlier line, and either is "
+    "enough. A dependency reported as down or failing in one of those ways is a valid cause "
+    "even if no line says why it is down; say so and put the follow-up in next_checks. "
+    "If no chunk names a mechanism, and the chunks only show that a step failed or that a "
+    "component returned an empty, invalid or unexpected response, answer 'inconclusive'. "
+    "Naming the failed component without saying what went wrong with it is restating the "
+    "error, not diagnosing it.\n"
     "5. Reply with JSON only, matching the schema."
 )
 
@@ -343,6 +349,25 @@ async def diagnose(
     similar = [i for i in parsed.similar_incidents if i in known]
 
     if not kept:
+        forced = DiagnosisResult(
+            root_cause=INCONCLUSIVE_ROOT_CAUSE,
+            confidence="inconclusive",
+            evidence=[],
+            similar_incidents=similar,
+            suggested_fix="",
+            next_checks=parsed.next_checks,
+        )
+        return DiagnosisOutcome(
+            status="inconclusive",
+            result=forced,
+            dropped_evidence=dropped,
+            prompt_tokens=usage.prompt,
+            completion_tokens=usage.completion,
+            llm_calls=usage.calls,
+        )
+
+    if parsed.confidence == "inconclusive":
+        # Rule 4: a model-declared "inconclusive" must not display a cause or evidence.
         forced = DiagnosisResult(
             root_cause=INCONCLUSIVE_ROOT_CAUSE,
             confidence="inconclusive",
