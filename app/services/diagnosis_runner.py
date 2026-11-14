@@ -23,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
 from app.services.diagnosis import DiagnosisOutcome, EvidenceChunk, LLMClient, diagnose
 from app.services.evidence_context import fetch_before, merge_context
 from app.services.llm_budget import estimate_tokens, hour_start, reserve, settle
+from app.services.redact import redact
 from app.services.retrieval import Hit, SearchFilters, SearchResult
 
 logger = logging.getLogger(__name__)
@@ -183,6 +184,9 @@ class DiagnosisRunner:
             return CoreResult(out, False, found.degraded, found.reason, found.hits)
         if context is not None:
             chunks = merge_context(chunks, await fetch_before(self._engine, *context))
+        # Nothing leaves for the LLM unredacted; evidence is verified against these copies.
+        chunks = [EvidenceChunk(c.chunk_id, redact(c.text)) for c in chunks]
+        llm_query = redact(found.query)
         now = self._clock()
         hour = hour_start(now)
         est = estimate_tokens(len(found.query) + sum(len(c.text) for c in chunks))
@@ -192,7 +196,7 @@ class DiagnosisRunner:
             self._blocked_hour = hour
             return CoreResult(None, True, found.degraded, found.reason, found.hits)
         try:
-            out = await diagnose(self._llm, found.query, chunks, known_ids)
+            out = await diagnose(self._llm, llm_query, chunks, known_ids)
         except BaseException:
             async with self._sessions() as session:
                 await settle(session, est, 0, hour=hour)
