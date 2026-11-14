@@ -17,6 +17,8 @@ Status = Literal["answered", "inconclusive", "failed"]
 
 MIN_QUOTE_LEN = 8
 INCONCLUSIVE_ROOT_CAUSE = "Inconclusive: no verifiable evidence in the retrieved logs."
+DEFAULT_429_WAIT_S = 5.0
+MAX_RETRY_AFTER_S = 20.0
 
 
 class EvidenceItem(BaseModel):
@@ -108,7 +110,15 @@ class LLMResponse:
 
 
 class TransientLLMError(Exception):
-    """Timeouts, 429, 5xx: worth one retry."""
+    """Timeouts, 429, 5xx: worth one retry.
+
+    retry_after_s is set for 429 (Retry-After header, else a default) and tells the
+    retry loop how long to wait. None means use the normal short backoff.
+    """
+
+    def __init__(self, message: str = "", retry_after_s: float | None = None) -> None:
+        super().__init__(message)
+        self.retry_after_s = retry_after_s
 
 
 class PermanentLLMError(Exception):
@@ -117,6 +127,18 @@ class PermanentLLMError(Exception):
 
 class LLMClient(Protocol):
     async def complete(self, system: str, user: str) -> LLMResponse: ...
+
+
+def _parse_retry_after(value: str | None) -> float:
+    if value is None:
+        return DEFAULT_429_WAIT_S
+    try:
+        seconds = float(value.strip())
+    except ValueError:
+        return DEFAULT_429_WAIT_S
+    if not 0 <= seconds < float("inf"):
+        return DEFAULT_429_WAIT_S
+    return seconds
 
 
 class OpenAILLM:
@@ -167,7 +189,11 @@ class OpenAILLM:
             )
         except (httpx.TimeoutException, httpx.TransportError) as exc:
             raise TransientLLMError(f"transport: {type(exc).__name__}") from exc
-        if resp.status_code == 429 or resp.status_code >= 500:
+        if resp.status_code == 429:
+            raise TransientLLMError(
+                "http 429", retry_after_s=_parse_retry_after(resp.headers.get("retry-after"))
+            )
+        if resp.status_code >= 500:
             raise TransientLLMError(f"http {resp.status_code}")
         if resp.status_code >= 400:
             raise PermanentLLMError(f"http {resp.status_code}")
@@ -280,10 +306,14 @@ async def _call_with_retry(
         try:
             usage.calls += 1
             resp = await llm.complete(system, user)
-        except TransientLLMError:
+        except TransientLLMError as exc:
             if attempt == 1:
                 raise
-            await sleep(backoff_s)
+            if exc.retry_after_s is None:
+                wait_s = backoff_s
+            else:
+                wait_s = min(exc.retry_after_s, MAX_RETRY_AFTER_S)
+            await sleep(wait_s)
             continue
         usage.prompt += resp.prompt_tokens
         usage.completion += resp.completion_tokens
