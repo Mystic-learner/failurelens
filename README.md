@@ -158,3 +158,9 @@ Caveats:
 
 - **Full-text search does not stem.** It uses the `simple` Postgres config on purpose, so identifiers like `blk_123` or `nova.virt.libvirt` and words like "not" stay intact. A query using a different word form than the log (`instance` vs `instances`) can lose its vector hit during hybrid fusion. A separate stemmed column would fix this without touching the existing one, but needs more eval cases first.
 - **Diagnosis needs an LLM key** (the free Gemini tier works, see Configuration). Without one, incidents still open but show "No diagnosis yet".
+- Diagnosis only looks inside the failing service. If service A fails because of something in service B, the answer is "inconclusive" or wrong (seen on the `cart-api` scenario).
+- Diagnosis can claim a cause when nothing was logged. If the logs show only the failure and no line that explains it, the model sometimes restates the symptom instead of answering "inconclusive". In 3 repeated runs of the `email-digest` scenario, 3 of 6 diagnoses were correct.
+- One failure can open more than one incident. Each distinct error message is its own signature and each new signature opens its own incident, so one Break it click can produce two incidents.
+- The "before the error" context is small: at most 4 distinct lines from the same service in the 30 minutes before the error. An older cause, or one buried under many newer lines, can be missed.
+- Diagnoses wait when the hourly token cap is reached (`LLM_HOURLY_TOKEN_CAP`). At about 1.7k tokens per diagnosis, a cap of 50,000 allows roughly 28 per hour.
+- The diagnosis scores come from a few synthetic scenarios (eval/scenario_run.py), each run twice, plus one hand-written log. Treat them as a trend, not an accuracy rate.
