@@ -3,10 +3,10 @@ services:
     image: pgvector/pgvector:pg16
     environment:
       POSTGRES_USER: failurelens
-      POSTGRES_PASSWORD: failurelens
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-failurelens}
       POSTGRES_DB: failurelens
     ports:
-      - "55432:5432"
+      - "127.0.0.1:55432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -24,7 +24,7 @@ services:
       POSTGRES_USER: failurelens
       POSTGRES_PASSWORD: failurelens
     ports:
-      - "55433:5432"
+      - "127.0.0.1:55433:5432"
     tmpfs:
       - /var/lib/postgresql/data
     healthcheck:
@@ -39,7 +39,7 @@ services:
       - path: .env
         required: false
     environment:
-      DATABASE_URL: postgresql+asyncpg://failurelens:failurelens@db:5432/failurelens
+      DATABASE_URL: postgresql+asyncpg://failurelens:${POSTGRES_PASSWORD:-failurelens}@db:5432/failurelens
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
       LOCAL_MODEL_DIR: /models/bge-small-en-v1.5
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
