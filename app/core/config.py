@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     llm_response_format: Literal["json_schema", "json_object"] = "json_object"
     llm_timeout_s: float = Field(default=30.0, gt=0)
     llm_hourly_token_cap: int = Field(default=200_000, gt=0)
+    # Shared secret for the API. Empty or unset means no auth (local dev and tests).
+    api_key: str | None = None
     diagnosis_runner_enabled: bool = True
     ws_max_clients: int = Field(default=200, ge=1)
     ws_client_queue: int = Field(default=100, ge=1)

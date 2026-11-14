@@ -9,6 +9,7 @@ import asyncio
 import contextlib
 import json
 import logging
+import secrets
 from typing import Protocol
 
 from fastapi import APIRouter, WebSocket
@@ -94,8 +95,26 @@ async def serve_client(
         hub.unsubscribe(client)
 
 
+def _ws_authorized(websocket: WebSocket) -> bool:
+    settings = getattr(websocket.app.state, "settings", None)
+    expected = getattr(settings, "api_key", None)
+    if not expected:
+        return True
+    supplied = websocket.headers.get("x-api-key") or websocket.query_params.get("api_key")
+    if supplied is None:
+        auth = websocket.headers.get("authorization", "")
+        if auth.lower().startswith("bearer "):
+            supplied = auth[7:].strip()
+    return supplied is not None and secrets.compare_digest(
+        supplied.encode(), expected.encode()
+    )
+
+
 @router.websocket("/ws/events")
 async def ws_events(websocket: WebSocket) -> None:
+    if not _ws_authorized(websocket):
+        await websocket.close(code=1008, reason="unauthorized")
+        return
     raw = websocket.query_params.get("last_event_id") or websocket.headers.get("last-event-id")
     last: int | None = None
     if raw is not None:

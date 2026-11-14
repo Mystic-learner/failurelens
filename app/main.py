@@ -3,10 +3,11 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import documents, health, incidents, ingest, ingest_status, metrics, search, ws
+from app.core.auth import require_api_key
 from app.core.config import Settings, get_settings
 from app.core.db import create_engine
 from app.core.errors import register_exception_handlers
@@ -130,13 +131,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
 
     app.include_router(health.router)
-    app.include_router(ingest.router)
-    app.include_router(ingest_status.router)
-    app.include_router(search.router)
-    app.include_router(incidents.router)
+    guard = [Depends(require_api_key)]
+    app.include_router(ingest.router, dependencies=guard)
+    app.include_router(ingest_status.router, dependencies=guard)
+    app.include_router(search.router, dependencies=guard)
+    app.include_router(incidents.router, dependencies=guard)
     app.include_router(ws.router)
-    app.include_router(metrics.router)
-    app.include_router(documents.router)
+    app.include_router(metrics.router, dependencies=guard)
+    app.include_router(documents.router, dependencies=guard)
     from app.api import ui as ui_page
     from app.api import ui_pages
 
