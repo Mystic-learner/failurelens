@@ -75,6 +75,12 @@ def make_provider(settings: Settings) -> EmbeddingProvider | None:
     packages or model files)."""
     if settings.embedding_provider == "fake":
         return FakeEmbeddingProvider()
+    if settings.embedding_provider == "gemini":
+        if not settings.llm_api_key:
+            return None
+        from app.services.embeddings_gemini import GeminiEmbeddingProvider
+
+        return GeminiEmbeddingProvider(settings.llm_api_key)
     if settings.embedding_provider == "local" and local_provider_available(settings):
         # Imported here: embeddings_local imports EmbeddingError from this module.
         from app.services.embeddings_local import LocalEmbeddingProvider

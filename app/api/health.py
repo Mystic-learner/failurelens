@@ -22,6 +22,8 @@ def embedding_configured(settings: Settings) -> bool:
     """Whether the selected embedding provider can run. No external call is made."""
     if settings.embedding_provider == "fake":
         return True
+    if settings.embedding_provider == "gemini":
+        return bool(settings.llm_api_key)
     return local_provider_available(settings)
 
 

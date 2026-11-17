@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     queue_max_size: int = Field(default=1000, gt=0)
     queue_max_bytes: int = Field(default=64 * 1024 * 1024, gt=0)
     queue_retry_after_s: int = Field(default=1, ge=1)
-    embedding_provider: Literal["local", "fake"] = "local"
+    embedding_provider: Literal["local", "fake", "gemini"] = "local"
     # Minimum vector similarity for a vector-only hit to count as evidence. Tuned on 11 eval
     # cases for the local bge-small model (answerable >= 0.708, off-topic <= 0.689); other
     # providers have different score distributions and need their own value.
