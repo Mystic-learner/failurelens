@@ -9,7 +9,7 @@ COPY pyproject.toml alembic.ini ./
 COPY app ./app
 COPY shipper ./shipper
 COPY alembic ./alembic
-RUN pip install ".[local]"
+RUN pip install .
 
 RUN useradd --create-home appuser
 USER appuser
