@@ -93,10 +93,16 @@ def _clean_query(query: str) -> str:
     return _CONTROL.sub("", query)
 
 
+_STOP_WORDS = frozenset(
+    "a an and are as at be by can do does for from how i in is it its my of on or our "
+    "so that the their this to was we were what when where which who why will with you".split()
+)
+
+
 def query_tokens(query: str) -> list[str]:
     seen: dict[str, None] = {}
     for token in _WORD.findall(query.lower()):
-        if len(token) >= 2:
+        if len(token) >= 2 and token not in _STOP_WORDS:
             seen.setdefault(token, None)
     return list(seen)[:MAX_TOKENS]
 
