@@ -74,6 +74,7 @@ PAGE = r"""<!doctype html>
   .console .err { color: var(--coral); }
   .gobtn { display: inline-block; margin-top: 16px; padding: 11px 22px; border-radius: 12px; border: 1px solid rgba(255,111,97,0.7); color: #fff; text-decoration: none; background: rgba(255,111,97,0.12); }
   .result { width: 100%; }
+  .logbox { width: 100%; max-width: 820px; min-height: 260px; resize: vertical; background: rgba(0,0,0,0.3); color: #d9dde2; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; font: 0.82rem/1.65 ui-monospace, "Cascadia Code", Consolas, monospace; }
   @media (max-width: 600px) { .row { flex-wrap: wrap; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
@@ -99,7 +100,7 @@ function el(tag, cls, text) {
   return e;
 }
 
-const NAV = [["/", "Search", "search"], ["/ui/documents", "Documents", "documents"], ["/ui/incidents", "Incidents", "incidents"], ["/ui/signatures", "Signatures", "signatures"], ["/ui/status", "Status", "status"], ["/ui/demo", "Break it", "demo"]];
+const NAV = [["/", "Search", "search"], ["/ui/documents", "Documents", "documents"], ["/ui/incidents", "Incidents", "incidents"], ["/ui/signatures", "Signatures", "signatures"], ["/ui/status", "Status", "status"], ["/ui/try", "Try your log", "tryit"], ["/ui/demo", "Break it", "demo"]];
 NAV.forEach((n) => {
   const a = el("a", n[2] === PAGE ? "active" : "", n[1]);
   a.href = n[0];
@@ -405,8 +406,143 @@ async function pageDemo() {
   });
 }
 
+async function pageTry() {
+  sub.textContent = "Paste a log that contains an error and get a diagnosis with quoted evidence.";
+  const MAX_LINES = 200;
+  const MAX_CHARS = 20000;
+  const TS = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:?\d{2})?\s+/;
+  const LVL = /^(TRACE|DEBUG|INFO|WARN|WARNING|ERROR|FATAL|CRITICAL)\b/i;
+  const wrap = el("div", "demo");
+  const warn = el("p", "note", "Your text is sent to Google Gemini to produce the diagnosis and is stored. It is visible on the Incidents page. Do not paste passwords, tokens, customer data or anything confidential.");
+  const box = el("textarea", "logbox");
+  box.placeholder = "Paste log lines here, oldest first. Include at least one ERROR line. Up to " + MAX_LINES + " lines.";
+  box.spellcheck = false;
+  const btn = el("button", "breakbtn", "Diagnose");
+  btn.type = "button";
+  const stage = el("div", "stage", "Paste a log above, then click Diagnose.");
+  const result = el("div", "result");
+  wrap.append(warn, box, btn, stage, result);
+  out.replaceChildren(wrap);
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const stamp = (off) => new Date(Date.now() + off).toISOString().replace("T", " ").replace("Z", "") + "000";
+
+  function norm(line) {
+    let s = line.replace(/\s+$/, "").replace(TS, "").replace(/^\[(\w+)\]\s*/, "$1 ");
+    if (!s.trim()) return null;
+    if (!LVL.test(s)) s = (/(error|exception|fatal|failed|traceback)/i.test(s) ? "ERROR " : "INFO ") + s;
+    return s;
+  }
+
+  async function post(svc, src, seq, text) {
+    for (let tries = 0; tries < 5; tries++) {
+      const r = await fetch("/ingest/stream", {
+        method: "POST",
+        headers: { "X-Service": svc, "X-Source-Id": src, "Idempotency-Key": src + "-" + seq, "X-Sequence": String(seq) },
+        body: text,
+      });
+      if (r.status === 429) { await sleep(1000); continue; }
+      if (!r.ok) throw new Error("The server said " + r.status + " when sending logs");
+      return;
+    }
+    throw new Error("The server is busy right now. Try again in a moment.");
+  }
+
+  function card(it) {
+    const c = el("article", "card");
+    c.appendChild(el("h3", "", "Incident #" + it.id));
+    const dg = it.diagnosis && typeof it.diagnosis === "object" ? it.diagnosis : null;
+    const res = dg && dg.result && typeof dg.result === "object" ? dg.result : null;
+    if (res) {
+      const tags = el("div", "tags");
+      if (res.confidence) tags.appendChild(el("span", "badge hot", "confidence: " + res.confidence));
+      c.appendChild(tags);
+      c.appendChild(el("div", "lbl", "Root cause"));
+      c.appendChild(el("p", "", res.root_cause || "-"));
+      if (Array.isArray(res.evidence) && res.evidence.length) {
+        c.appendChild(el("div", "lbl", "Evidence"));
+        res.evidence.forEach((ev) => c.appendChild(el("pre", "", ev.quoted_line || show(ev))));
+      }
+      if (Array.isArray(res.next_checks) && res.next_checks.length) {
+        c.appendChild(el("div", "lbl", "Next checks"));
+        const ul = el("ul", "");
+        res.next_checks.forEach((x) => ul.appendChild(el("li", "", x)));
+        c.appendChild(ul);
+      }
+      if (res.suggested_fix) {
+        c.appendChild(el("div", "lbl", "Suggested fix"));
+        c.appendChild(el("p", "", res.suggested_fix));
+      }
+    } else if (dg && (dg.status === "failed" || dg.error)) {
+      c.appendChild(el("div", "lbl", "Diagnosis failed"));
+      c.appendChild(el("pre", "", show(dg.error)));
+    } else {
+      c.appendChild(el("div", "lbl", "Still diagnosing"));
+      c.appendChild(el("p", "", "Check the Incidents page in a moment."));
+    }
+    return c;
+  }
+
+  btn.addEventListener("click", async () => {
+    result.replaceChildren();
+    const raw = box.value;
+    if (!raw.trim()) { stage.textContent = "Paste some log lines first."; return; }
+    if (raw.length > MAX_CHARS) { stage.textContent = "Too long. The limit is " + MAX_CHARS + " characters."; return; }
+    const lines = raw.split(/\r?\n/).map(norm).filter((l) => l !== null);
+    if (lines.length > MAX_LINES) { stage.textContent = "Too many lines. The limit is " + MAX_LINES + "."; return; }
+    if (!lines.some((l) => /^(ERROR|FATAL|CRITICAL)\b/i.test(l))) {
+      stage.textContent = "No ERROR line found. FailureLens opens incidents for errors, so include at least one.";
+      return;
+    }
+    btn.disabled = true;
+    stage.className = "stage hot";
+    stage.textContent = "Sending your log...";
+    try {
+      const svc = "try-" + Date.now().toString(36).slice(-6);
+      const src = "try-" + Date.now().toString(36);
+      const n = lines.length;
+      const stamped = lines.map((l, i) => stamp((i - n) * 40) + " " + l);
+      let seq = 0;
+      for (let i = 0; i < stamped.length; i += 20) {
+        seq += 1;
+        await post(svc, src, seq, stamped.slice(i, i + 20).join("\n") + "\n");
+        await sleep(300);
+      }
+      let mine = [];
+      const t0 = Date.now();
+      while (Date.now() - t0 < 120000) {
+        await sleep(2000);
+        try {
+          const d = await api("/incidents");
+          mine = ((d && d.items) || []).filter((it) => it.service === svc);
+        } catch (e) { /* keep waiting */ }
+        stage.textContent = mine.length ? "Incident opened. Waiting for the diagnosis..." : "Logs sent. Waiting for FailureLens to open an incident...";
+        if (mine.length && mine.every((it) => it.diagnosis && it.diagnosis.status)) break;
+      }
+      if (!mine.length) {
+        stage.textContent = "No incident opened.";
+        const c = el("div", "empty warn");
+        c.appendChild(el("strong", "", "No incident yet"));
+        c.appendChild(el("p", "", "The logs were accepted but no incident opened. Check the Incidents page in a moment."));
+        result.replaceChildren(c);
+      } else {
+        stage.textContent = "Done. If your failure shows more than one incident, the others are on the Incidents page.";
+        result.replaceChildren(...mine.map(card));
+      }
+    } catch (err) {
+      stage.textContent = "Something went wrong.";
+      const c = el("div", "empty warn");
+      c.appendChild(el("strong", "", "Could not send the logs"));
+      c.appendChild(el("p", "", String(err.message || err)));
+      result.replaceChildren(c);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
 async function load() {
-  const pages = { documents: pageDocuments, incidents: pageIncidents, signatures: pageSignatures, status: pageStatus, demo: pageDemo };
+  const pages = { documents: pageDocuments, incidents: pageIncidents, signatures: pageSignatures, status: pageStatus, demo: pageDemo, tryit: pageTry };
   try { await pages[PAGE](); } catch (err) { fail(err); }
 }
 load();
@@ -421,6 +557,7 @@ TITLES = {
     "signatures": "Signatures",
     "status": "Status",
     "demo": "Break it",
+    "tryit": "Try your log",
 }
 
 
@@ -452,3 +589,8 @@ async def ui_demo() -> HTMLResponse:
 @router.get("/ui/status", response_class=HTMLResponse, include_in_schema=False)
 async def ui_status() -> HTMLResponse:
     return _page("status")
+
+
+@router.get("/ui/try", response_class=HTMLResponse, include_in_schema=False)
+async def ui_try() -> HTMLResponse:
+    return _page("tryit")
