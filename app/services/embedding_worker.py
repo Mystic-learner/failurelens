@@ -90,14 +90,16 @@ class EmbeddingWorker:
         provider: EmbeddingProvider,
         *,
         interval_s: float = 2.0,
-        batch_size: int = 64,
-        max_backoff_s: float = 60.0,
+        batch_size: int = 16,
+        max_backoff_s: float = 300.0,
+        full_batch_pause_s: float = 12.0,
     ) -> None:
         self._engine = engine
         self._provider = provider
         self._interval_s = interval_s
         self._batch_size = batch_size
         self._max_backoff_s = max_backoff_s
+        self._full_batch_pause_s = full_batch_pause_s
         self._stop = asyncio.Event()
         self._task: asyncio.Task[None] | None = None
         self.embedded = 0
@@ -129,7 +131,7 @@ class EmbeddingWorker:
                 consecutive = 0
                 self.degraded = False
                 self.embedded += stored
-                wait = 0.0 if stored >= self._batch_size else self._interval_s
+                wait = self._full_batch_pause_s if stored >= self._batch_size else self._interval_s
             try:
                 await asyncio.wait_for(self._stop.wait(), wait)
             except TimeoutError:
