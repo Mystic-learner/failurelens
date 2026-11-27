@@ -16,3 +16,5 @@ eval/fixtures/loghub/
 models/
 
 *.bak*
+
+*.bak*
