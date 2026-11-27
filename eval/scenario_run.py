@@ -209,6 +209,7 @@ def main() -> int:
         "all": SCENARIOS + HARD_SCENARIOS + NEW_SCENARIOS,
     }
     expected = {f"{s['svc']}-{tag}": s for s in chosen[args.set]}
+    per_service = 1  # detector grouping: one incident per failing service
     t0 = time.time()
     found: dict[int, tuple[dict, float]] = {}
     with httpx.Client(
@@ -226,7 +227,7 @@ def main() -> int:
             for it in seen:
                 if it.get("status") == "diagnosed" and it["id"] not in found:
                     found[it["id"]] = (it, time.time() - t0)
-            if len(seen) >= 2 * len(expected) and len(found) >= len(seen):
+            if len(seen) >= per_service * len(expected) and len(found) >= len(seen):
                 break
             time.sleep(2)
     rows = []
@@ -236,7 +237,7 @@ def main() -> int:
         v, root = verdict(it, sc["keywords"], sc.get("no_cause", False), sc.get("require"))
         rows.append((iid, it["service"], v, secs, root))
         print(f"#{iid:<4} {it['service']:<26} {v:<12} {secs:5.0f}s  {root[:70]}")
-    total = 2 * len(expected)
+    total = per_service * len(expected)
     n = {
         k: sum(1 for r in rows if r[2] == k)
         for k in ("RIGHT", "WRONG", "INCONCLUSIVE", "CLAIMED", "ERROR")
