@@ -8,31 +8,8 @@ from fastapi.responses import Response
 router = APIRouter()
 
 _JS = '''(function () {
-  var KEY = "fl_api_key";
-  function getKey() {
-    try { return sessionStorage.getItem(KEY) || ""; } catch (e) { return ""; }
-  }
-  function setKey(v) {
-    try { sessionStorage.setItem(KEY, v); } catch (e) { /* ignore */ }
-  }
-  var orig = window.fetch.bind(window);
-  function withKey(init, key) {
-    var o = Object.assign({}, init || {});
-    var h = new Headers(o.headers || {});
-    if (key) { h.set("X-API-Key", key); }
-    o.headers = h;
-    return o;
-  }
-  window.fetch = async function (input, init) {
-    var local = typeof input === "string" && input.charAt(0) === "/" && input.charAt(1) !== "/";
-    if (!local) { return orig(input, init); }
-    var r = await orig(input, withKey(init, getKey()));
-    if (r.status !== 401) { return r; }
-    var k = window.prompt("API key required:");
-    if (!k) { return r; }
-    setKey(k);
-    return orig(input, withKey(init, k));
-  };
+  // No key prompt. Same-origin requests are allowed by the server via Origin/sec-fetch-site check.
+  // External clients (shipper) must send X-API-Key themselves.
 })();
 '''
 
