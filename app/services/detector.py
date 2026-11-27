@@ -11,6 +11,10 @@ concurrent writers cannot create two. Each opened incident writes an 'incident.o
 in the same transaction.
 
 Known limit: spike windows use event time, so replaying old logs never triggers (b).
+Grouping: a new signature does not open its own incident when the same service already has
+a non-resolved incident created in the last group_recent_min minutes whose signature first
+appeared within group_window_s seconds (minute-bucket granularity). One failure that logs
+several distinct errors therefore opens one incident, not one per message.
 """
 
 from __future__ import annotations
@@ -33,12 +37,16 @@ class DetectorConfig:
     spike_factor: float = 5.0
     min_count: int = 20
     cooldown_min: int = 10
+    group_window_s: int = 60
+    group_recent_min: int = 10
 
     def __post_init__(self) -> None:
         if self.window_min <= 0 or self.baseline_min <= 0 or self.cooldown_min < 0:
             raise ValueError("window, baseline and cooldown must be positive")
         if self.spike_factor < 0 or self.min_count < 1:
             raise ValueError("spike_factor must be >= 0 and min_count >= 1")
+        if self.group_window_s < 0 or self.group_recent_min < 1:
+            raise ValueError("group_window_s must be >= 0 and group_recent_min >= 1")
 
 
 DEFAULT_DETECTOR = DetectorConfig()
@@ -63,6 +71,22 @@ _SQL_OPEN = text(
     WHERE NOT EXISTS (
         SELECT 1 FROM incidents
         WHERE signature_id = CAST(:sid AS bigint) AND cooldown_until > CAST(:now AS timestamptz)
+    )
+    AND (
+        CAST(:gw AS integer) <= 0
+        OR NOT EXISTS (
+            SELECT 1
+            FROM signatures me
+            JOIN signatures other ON other.service = me.service AND other.id <> me.id
+            JOIN incidents oi ON oi.signature_id = other.id AND oi.status <> 'resolved'
+            WHERE me.id = CAST(:sid AS bigint)
+              AND oi.created_at
+                  > CAST(:now AS timestamptz) - make_interval(mins => CAST(:gr AS integer))
+              AND abs(extract(epoch FROM (
+                    (SELECT min(minute) FROM signature_buckets WHERE signature_id = me.id)
+                  - (SELECT min(minute) FROM signature_buckets WHERE signature_id = other.id)
+              ))) <= CAST(:gw AS integer)
+        )
     )
     ON CONFLICT DO NOTHING
     RETURNING id
@@ -123,6 +147,8 @@ async def detect(
                 "trigger": trigger,
                 "until": when + timedelta(minutes=cfg.cooldown_min),
                 "now": when,
+                "gw": cfg.group_window_s,
+                "gr": cfg.group_recent_min,
             },
         )
         row = result.first()
