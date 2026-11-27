@@ -12,12 +12,14 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field, StringConstraints
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-router = APIRouter()
+from app.core.auth import require_ingest_key
+
+router = APIRouter(dependencies=[Depends(require_ingest_key)], )
 
 Key = Annotated[str, StringConstraints(min_length=1, max_length=200)]
 Name = Annotated[str, StringConstraints(min_length=1, max_length=200)]

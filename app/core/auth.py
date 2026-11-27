@@ -22,3 +22,18 @@ async def require_api_key(request: Request) -> None:
             detail="Missing or invalid API key",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+async def require_ingest_key(request: Request) -> None:
+    """Protect machine-facing ingest routes. Uses ingest_api_key, falls back to api_key."""
+    settings = getattr(request.app.state, "settings", None)
+    expected = getattr(settings, "ingest_api_key", None) or getattr(settings, "api_key", None)
+    if not expected:
+        return
+    supplied = request.headers.get("x-api-key")
+    if supplied is None:
+        auth = request.headers.get("authorization", "")
+        if auth.lower().startswith("bearer "):
+            supplied = auth[7:].strip()
+    if supplied != expected:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")

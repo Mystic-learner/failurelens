@@ -12,12 +12,13 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from pydantic import BaseModel
 
+from app.core.auth import require_ingest_key
 from app.services.ingest_queue import IngestItem, IngestQueue, QueueClosed, QueueFull
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_ingest_key)], )
 
 MAX_SEQ = 2**62
 SHUTDOWN_RETRY_AFTER_S = 5
